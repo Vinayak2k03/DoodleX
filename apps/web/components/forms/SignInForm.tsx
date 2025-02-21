@@ -60,7 +60,7 @@ export function SignInForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
       {error && <div className="text-red-500 text-sm">{error}</div>}
       <div>
         <Label htmlFor="email">Email</Label>
@@ -80,7 +80,7 @@ export function SignInForm() {
         )}
       </div>
 
-    <Button type="submit" disabled={loading} className='w-full mt-4'>
+    <Button type="submit" disabled={loading} className='w-full'>
         {loading ? (
             <>
                 <Loader2 className='animate-spin'/>Signing in...
@@ -90,7 +90,7 @@ export function SignInForm() {
         )}
     </Button>
 
-    <div className='text-center text-sm mt-2'>
+    <div className='text-center text-sm'>
         Don&apos;t have an account? {" "}
         <Link href="/signup" className='text-blue-500 hover:underline'>Sign Up</Link>
     </div>

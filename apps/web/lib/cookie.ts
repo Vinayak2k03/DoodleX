@@ -1,4 +1,4 @@
- "use server";
+"use server";
 
 import { BACKEND_URL } from "@/config";
 import axios from "axios";
@@ -13,11 +13,9 @@ import axios from "axios";
         name:"token",
         value:token,
         expires:expireDate,
-
         // VULNERABILITY: The following options should be set to true
         // IMPORTANT IMPORTANT IMPORTANT 
-
-        httpOnly:true,
+        httpOnly:false,
         sameSite:false
     })
  }
@@ -28,8 +26,8 @@ import axios from "axios";
 
         if(!token) return null;
 
-        await axios.post(`${BACKEND_URL}/auth/me`,{
-            headers:{authorization:`Bearer ${token}`}
+        await axios.get(`${BACKEND_URL}/auth/me`,{
+            headers:{Authorization:`Bearer ${token}`}
         })
 
         console.log("Token verified successfully");

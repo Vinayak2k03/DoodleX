@@ -31,6 +31,7 @@ const authMiddleware=(req:Request,res:Response,next:NextFunction):any=>{
         req.user=decodedToken.userId;
         next();
     }catch(err){
+        console.log(err);
         res.status(401).send("Unauthorized");
     }
 }
