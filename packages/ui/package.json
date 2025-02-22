@@ -8,7 +8,8 @@
     "./components/*": "./src/components/*.tsx",
     "./globals.css": "./src/styles/globals.css",
     "./tailwind.config": "./tailwind.config.ts",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./hooks/*": "./src/hooks/*.ts",
+    "./icons/*":"./src/icons/*.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

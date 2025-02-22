@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@repo/ui/components/button";
 import { ArrowLeft } from "lucide-react";
+import CanvasWrapper from "@/components/CanvasWrapper";
 
 export default function CanvasLanding() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function CanvasLanding() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
       </Link>
+      <CanvasWrapper roomId={slug as string}></CanvasWrapper>
     </div>
   );
 }

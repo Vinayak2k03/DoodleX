@@ -13,8 +13,10 @@ import {
 } from "@repo/ui/components/card";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import axios, { AxiosError } from "axios";
+import { Delete, DeleteIcon, LucideDelete } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import DeleteIcon1 from "@repo/ui/icons/deleteIcon";
 
 type Room = {
   id: number;
@@ -38,7 +40,6 @@ export default function Dashboard() {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(response.data.rooms);
         setRooms(response.data.rooms);
       } catch (err: unknown) {
         if (err instanceof AxiosError) {
@@ -61,10 +62,9 @@ export default function Dashboard() {
     fetchRooms();
   }, []);
 
-
-  const handleRoomCreated=(newRoom:Room)=>{
-    setRooms((prevRooms)=>[...prevRooms,newRoom])
-  }
+  const handleRoomCreated = (newRoom: Room) => {
+    setRooms((prevRooms) => [...prevRooms, newRoom]);
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -73,7 +73,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-foreground">
             Your Drawing Rooms
           </h1>
-          <CreateRoomForm onRoomCreated={handleRoomCreated}/>
+          <CreateRoomForm onRoomCreated={handleRoomCreated} />
         </div>
 
         {/*Showing loading ui*/}
@@ -98,6 +98,7 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center text-card-foreground">
                     {room.slug}
+                    <DeleteIcon1 />
                   </CardTitle>
                   <CardDescription>
                     Created {new Date(room.createdAt).toLocaleDateString()}
@@ -124,7 +125,7 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CreateRoomForm />
+                  <CreateRoomForm onRoomCreated={handleRoomCreated} />
                 </CardContent>
               </Card>
             )}
