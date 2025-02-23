@@ -34,7 +34,7 @@ export default function ActionBar({
           variant="ghost"
           title="Pencil (P)"
           className={`h-9 w-9 rounded-md transition-colors ${tool === `pencil` ? activeClass : inactiveClass}`}
-          onClick={() => setSelectedTool("pencil")}
+          onClick={() =>setSelectedTool("pencil")}
         >
           <Pencil className="h-5 w-5" />
         </Button>

@@ -139,6 +139,15 @@ export class Canvas {
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
   }
 
+  setTool(tool:Tool){
+    this.selectedTool=tool;
+    if(tool==='pan'){
+      this.canvas.style.cursor='grab';
+    }
+    else{
+      this.canvas.style.cursor='crosshair';
+    }
+  }
 
 
   initHandlers(){

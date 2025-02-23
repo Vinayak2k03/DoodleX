@@ -3,7 +3,6 @@ import { getVerifiedToken } from "@/lib/cookie";
 import axios, { AxiosError } from "axios";
 import { useToast } from "@repo/ui/hooks/use-toast";
 
-const { toast } = useToast();
 
 export async function getExistingShapes(slug: string) {
   try {
