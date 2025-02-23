@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import ActionBar from "./Actionbar";
-import { Canvas } from "@/app/draw/Canvas";
+import { Canvas, Tool } from "@/app/draw/Canvas";
 
 export default function CanvasRenderer({
   roomId,
@@ -12,7 +12,7 @@ export default function CanvasRenderer({
   socket: WebSocket;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [tool,setTool]=useState('rect');
+  const [tool,setTool]=useState<Tool>('rect');
   const [canvas,setCanvas]=useState<Canvas>();
   const [scale,setScale]=useState(1);
 
@@ -22,7 +22,7 @@ export default function CanvasRenderer({
         ref={canvasRef}
         className="fixed top-0 left-0 w-screen h-screen"
       />
-      {/* <ActionBar tool={tool} setSelectedTool={setTool} onResetView={()=>canvas?.resetView()} scale={scale}/> */}
+      <ActionBar tool={tool} setSelectedTool={setTool} onResetView={()=>canvas?.resetView()} scale={scale}/>
     </div>
   );
 }
