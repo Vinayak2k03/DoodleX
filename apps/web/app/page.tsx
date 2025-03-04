@@ -5,7 +5,7 @@ export default function Home(){
   return (
     <div className='min-h-screen bg-gradient-to-b from-background to-muted flex flex-col items-center justify-center p-4'>
      <div className='max-w-2xl text-center space-y-8'>
-        <h1 className='text-4xl sm:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60'>Collaborative Drawing</h1>
+        <h1 className='text-4xl sm:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60'>DoodleX</h1>
         <p className='text-lg text-muted-foreground'>
           Create, collaborate, and share your drawings in real-time with anyone around the world.
         </p>
