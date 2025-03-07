@@ -1,10 +1,14 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    "lib": ["es2015", "es2016", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@repo/ui/*": ["../../packages/ui/src/*"]
+      "@repo/ui/*": ["../../packages/ui/src/*"],
+      "@repo/backend-common/*": ["../../packages/backend-common/src/*"],
+      "@repo/db/*": ["../../packages/db/src/*"],
+      "@repo/common/*": ["../../packages/common/src/*"]
     },
     "plugins": [
       {

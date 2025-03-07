@@ -1,0 +1,52 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.http
+    ports:
+      - "3001:3001"
+    environment:
+    # connector://user:password@hostname:port/dbname?arguments
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:3001/api/v1
+      - NEXT_PUBLIC_WS_URL=ws://ws:8080
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+    depends_on:
+      - postgres
+      - ws
+  
+  ws:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ws
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+volumes:
+  postgres_data:

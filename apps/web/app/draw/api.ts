@@ -1,8 +1,12 @@
 import { BACKEND_URL } from "@/config";
 import { getVerifiedToken } from "@/lib/cookie";
 import axios, { AxiosError } from "axios";
-import { useToast } from "@repo/ui/hooks/use-toast";
+// Remove the useToast import as it can't be used in a non-component context
 
+// Create a non-hook version of error handling
+const logError = (message: string) => {
+  console.error(message);
+};
 
 export async function getExistingShapes(slug: string) {
   try {
@@ -17,17 +21,9 @@ export async function getExistingShapes(slug: string) {
     return messages.map((message: any) => JSON.parse(message?.message));
   } catch (err) {
     if (err instanceof AxiosError) {
-      toast({
-        title: "Error",
-        description: err.response?.data?.message || "Failed to fetch shapes",
-        variant: "destructive",
-      });
+      logError(err.response?.data?.message || "Failed to fetch shapes");
     } else {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      logError("An unexpected error occurred");
     }
     return [];
   }
