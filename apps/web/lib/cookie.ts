@@ -2,23 +2,23 @@
 
 import { BACKEND_URL } from "@/config";
 import axios from "axios";
- import {cookies} from "next/headers";
+import {cookies} from "next/headers";
 
 
- export const setTokenCookie=async(token:string)=>{
-    const expireDate=new Date();
-    expireDate.setDate(expireDate.getDate()+15);
+ export const setTokenCookie = async (token: string) => {
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 15);
 
     (await cookies()).set({
-        name:"token",
-        value:token,
-        expires:expireDate,
-        // VULNERABILITY: The following options should be set to true
-        // IMPORTANT IMPORTANT IMPORTANT 
-        httpOnly:false,
-        sameSite:false
+        name: "token",
+        value: token,
+        expires: expireDate,
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/"
     })
- }
+}
 
  export const getVerifiedToken=async():Promise<string|null>=>{
     try{

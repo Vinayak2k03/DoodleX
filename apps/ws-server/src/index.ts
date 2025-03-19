@@ -27,8 +27,10 @@ function checkUser(token: string): string | null {
 }
 
 wss.on("connection", (ws, request) => {
+  console.log("New WebSocket connection attempt from:", request.socket.remoteAddress);
   const url = request.url;
   if (!url) {
+    console.log("No URL in request");
     return ws.close();
   }
 
@@ -40,12 +42,14 @@ wss.on("connection", (ws, request) => {
     return ws.close();
   }
 
+  console.log("Attempting to verify token");
   const userId = checkUser(token);
   if (!userId) {
     console.log("Invalid token");
     return ws.close();
   }
 
+  console.log("User authenticated:", userId);
   users.push({
     userId,
     ws,
