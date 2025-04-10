@@ -1,6 +1,7 @@
 import { Tool } from "@/app/draw/Canvas";
 import { Button } from "@repo/ui/components/button";
-import { Circle, Hand, Minus, Pencil, RotateCcw, Square } from "lucide-react";
+import { Circle, Hand, Minus, Pencil, RotateCcw, Square, Undo, Redo, Eraser } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/components/tooltip";
 
 export default function ActionBar({
   tool,
@@ -13,73 +14,134 @@ export default function ActionBar({
   onResetView: () => void;
   scale: number;
 }) {
-  const activeClass = `bg-accent text-accent-foreground shadow-inner`;
-  const inactiveClass = `hover:bg-accent/50 text-foreground/80`;
+  const activeClass = `bg-primary text-primary-foreground shadow-inner scale-[0.98] font-medium`;
+  const inactiveClass = `hover:bg-accent/70 text-foreground/80 hover:text-foreground transition-all`;
+
+  // Group our tools for better organization
+  const toolGroups = [
+    {
+      title: "Navigation",
+      tools: [
+        { id: "pan" as Tool, icon: <Hand className="h-4 w-4" />, label: "Hand Tool", shortcut: "H" }
+      ]
+    },
+    {
+      title: "Drawing",
+      tools: [
+        { id: "pencil" as Tool, icon: <Pencil className="h-4 w-4" />, label: "Pencil", shortcut: "P" },
+        { id: "rect" as Tool, icon: <Square className="h-4 w-4" />, label: "Rectangle", shortcut: "R" },
+        { id: "circle" as Tool, icon: <Circle className="h-4 w-4" />, label: "Circle", shortcut: "C" },
+        { id: "line" as Tool, icon: <Minus className="h-4 w-4" />, label: "Line", shortcut: "L" },
+        { id: "eraser" as Tool, icon: <Eraser className="h-4 w-4" />, label: "Eraser", shortcut: "E" }
+      ]
+    }
+  ];
 
   return (
-    <div className="fixed left-1/2 top-4 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-1 p-1.5 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg border shadow-lg">
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Hand Tool (H)"
-          className={`h-9 w-9 rounded-md transition-colors ${tool === "pan" ? activeClass : inactiveClass}`}
-          onClick={() => setSelectedTool("pan")}
-        >
-          <Hand className="h-5 w-5" />
-        </Button>
-        <div className="w-px h-6 bg-border mx-1" />
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Pencil (P)"
-          className={`h-9 w-9 rounded-md transition-colors ${tool === `pencil` ? activeClass : inactiveClass}`}
-          onClick={() =>setSelectedTool("pencil")}
-        >
-          <Pencil className="h-5 w-5" />
-        </Button>
-        <div className="w-px h-6 bg-border mx-1" />
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Rectangle (R)"
-          className={`h-9 w-9 rounded-md transition-colors ${tool === `rect` ? activeClass : inactiveClass}`}
-          onClick={() => setSelectedTool("rect")}
-        >
-          <Square className="h-5 w-5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Circle (C)"
-          className={`h-9 w-9 rounded-md transition-colors ${tool === `circle` ? activeClass : inactiveClass}`}
-          onClick={() => setSelectedTool("circle")}
-        >
-          <Circle className="h-5 w-5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Line (L)"
-          className={`h-9 w-9 rounded-md transition-colors ${tool === `line` ? activeClass : inactiveClass}`}
-          onClick={() => setSelectedTool("line")}
-        >
-          <Minus className="h-5 w-5" />
-        </Button>
-        <div className="w-px h-6 bg-border mx-1" />
-        <div className="text-xs text-muted-foreground font-mono">
-          {Math.round(scale * 100)}%
+    <TooltipProvider delayDuration={300}>
+      <div className="fixed left-1/2 bottom-6 -translate-x-1/2 z-50">
+        <div className="flex items-center gap-1 p-1.5 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 rounded-xl border border-border/40 shadow-lg">
+          {toolGroups.map((group, groupIndex) => (
+            <div key={group.title} className="flex items-center">
+              {groupIndex > 0 && <div className="w-px h-7 bg-border/60 mx-1.5" />}
+              
+              {group.tools.map((toolItem) => (
+                <Tooltip key={toolItem.id}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className={`h-8 w-8 rounded-lg transition-all duration-200 ${tool === toolItem.id ? activeClass : inactiveClass}`}
+                      onClick={() => setSelectedTool(toolItem.id)}
+                    >
+                      {toolItem.icon}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="flex items-center gap-1.5">
+                    <span>{toolItem.label}</span>
+                    <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                      {toolItem.shortcut}
+                    </kbd>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          ))}
+          
+          <div className="w-px h-7 bg-border/60 mx-1.5" />
+          
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 px-2 rounded-lg text-xs font-mono bg-accent/30 hover:bg-accent/50 transition-colors"
+                >
+                  {Math.round(scale * 100)}%
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Zoom Level</TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-lg transition-colors hover:bg-accent/70"
+                  onClick={onResetView}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Reset View</TooltipContent>
+            </Tooltip>
+          </div>
+          
+          <div className="w-px h-7 bg-border/60 mx-1.5" />
+          
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-lg transition-colors hover:bg-accent/70"
+                  disabled
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="flex items-center gap-1.5">
+                <span>Undo</span>
+                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  Ctrl+Z
+                </kbd>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-lg transition-colors hover:bg-accent/70"
+                  disabled
+                >
+                  <Redo className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="flex items-center gap-1.5">
+                <span>Redo</span>
+                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  Ctrl+Y
+                </kbd>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Reset View"
-          className={"h-9 w-9 rounded-md transition-colors hover:bg-accent/50"}
-          onClick={onResetView}
-        >
-          <RotateCcw className="h-4 w-4" />
-        </Button>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
