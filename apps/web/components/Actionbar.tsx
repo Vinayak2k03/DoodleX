@@ -31,8 +31,7 @@ export default function ActionBar({
         { id: "pencil" as Tool, icon: <Pencil className="h-4 w-4" />, label: "Pencil", shortcut: "P" },
         { id: "rect" as Tool, icon: <Square className="h-4 w-4" />, label: "Rectangle", shortcut: "R" },
         { id: "circle" as Tool, icon: <Circle className="h-4 w-4" />, label: "Circle", shortcut: "C" },
-        { id: "line" as Tool, icon: <Minus className="h-4 w-4" />, label: "Line", shortcut: "L" },
-        { id: "eraser" as Tool, icon: <Eraser className="h-4 w-4" />, label: "Eraser", shortcut: "E" }
+        { id: "line" as Tool, icon: <Minus className="h-4 w-4" />, label: "Line", shortcut: "L" }
       ]
     }
   ];
@@ -96,48 +95,6 @@ export default function ActionBar({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">Reset View</TooltipContent>
-            </Tooltip>
-          </div>
-          
-          <div className="w-px h-7 bg-border/60 mx-1.5" />
-          
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 rounded-lg transition-colors hover:bg-accent/70"
-                  disabled
-                >
-                  <Undo className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="flex items-center gap-1.5">
-                <span>Undo</span>
-                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                  Ctrl+Z
-                </kbd>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 rounded-lg transition-colors hover:bg-accent/70"
-                  disabled
-                >
-                  <Redo className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="flex items-center gap-1.5">
-                <span>Redo</span>
-                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                  Ctrl+Y
-                </kbd>
-              </TooltipContent>
             </Tooltip>
           </div>
         </div>

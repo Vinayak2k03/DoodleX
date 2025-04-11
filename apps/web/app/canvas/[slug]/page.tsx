@@ -62,23 +62,6 @@ export default function CanvasLanding() {
           </div>
         </div>
       </div>
-
-      {/* Status indicators */}
-      <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-card/80 backdrop-blur-sm p-2 rounded-full shadow-md border border-border/30">
-        <div className="flex items-center">
-          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse mr-1"></div>
-          <span className="text-xs text-muted-foreground">Connected</span>
-        </div>
-        <div className="h-4 w-px bg-border/50"></div>
-        <div className="flex items-center">
-          <div className="relative flex -space-x-2">
-            <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs">
-              <span>U</span>
-            </div>
-          </div>
-          <span className="text-xs text-muted-foreground ml-1">1 online</span>
-        </div>
-      </div>
       
       {/* Canvas with subtle padding to account for the header */}
       <div className="pt-14">

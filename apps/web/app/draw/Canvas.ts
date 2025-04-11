@@ -56,7 +56,7 @@ export class Canvas {
   private readonly LINE_WIDTH = 2;
   private lastPanPoint: { x: number; y: number } | null = null;
 
-  onScaleChange?:(scale:number)=>void;
+  onScaleChange?: (scale: number) => void;
 
   constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
     this.canvas = canvas;
@@ -139,51 +139,49 @@ export class Canvas {
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
   }
 
-  setTool(tool:Tool){
-    this.selectedTool=tool;
-    if(tool==='pan'){
-      this.canvas.style.cursor='grab';
-    }
-    else{
-      this.canvas.style.cursor='crosshair';
+  setTool(tool: Tool) {
+    this.selectedTool = tool;
+    if (tool === "pan") {
+      this.canvas.style.cursor = "grab";
+    } else {
+      this.canvas.style.cursor = "crosshair";
     }
   }
 
-
-  initHandlers(){
-    this.socket.onmessage=(event)=>{
-        try{
-            const message=JSON.parse(event.data);
-            if(message.type==='shape_update'){
-                const shape=JSON.parse(message.message);
-                this.existingShapes.push(shape);
-                this.redraw();
-            }
-        }catch(err){
-            console.log("Error handling WebSocket message:",err);
+  initHandlers() {
+    this.socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === "shape_update") {
+          const shape = JSON.parse(message.message);
+          this.existingShapes.push(shape);
+          this.redraw();
         }
-    }
+      } catch (err) {
+        console.log("Error handling WebSocket message:", err);
+      }
+    };
 
-    this.canvas.addEventListener('wheel',(e)=>{
-        e.preventDefault();
+    this.canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
 
-        const delta=e.deltaY>0?0.9:1.1;
-        const mouseX=e.clientX;
-        const mouseY=e.clientY;
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
 
-        const pointX=(mouseX-this.offsetX)/this.scale;
-        const pointY=(mouseY-this.offsetY)/this.scale;
-        this.scale*=delta;
-        
-        // Limit the scale to a minimum of 0.1 and a maximum of 10
-        this.scale=Math.min(Math.max(0.1,this.scale),10);
-        this.onScaleChange?.(this.scale);
+      const pointX = (mouseX - this.offsetX) / this.scale;
+      const pointY = (mouseY - this.offsetY) / this.scale;
+      this.scale *= delta;
 
-        this.offsetX=mouseX-pointX*this.scale;
-        this.offsetY=mouseY-pointY*this.scale;
+      // Limit the scale to a minimum of 0.1 and a maximum of 10
+      this.scale = Math.min(Math.max(0.1, this.scale), 10);
+      this.onScaleChange?.(this.scale);
 
-        this.redraw();
-    })
+      this.offsetX = mouseX - pointX * this.scale;
+      this.offsetY = mouseY - pointY * this.scale;
+
+      this.redraw();
+    });
   }
 
   redraw() {
@@ -201,10 +199,10 @@ export class Canvas {
     this.drawExistingShapes();
   }
 
-  resetView(){
-    this.scale=1;
-    this.offsetX=0;
-    this.offsetY=0;
+  resetView() {
+    this.scale = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
     this.onScaleChange?.(this.scale);
     this.redraw();
   }
@@ -372,5 +370,138 @@ export class Canvas {
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
     this.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+
+  // Method to draw AI-generated rectangle
+  drawAIRect(x: number, y: number, width: number, height: number) {
+    // Draw on the canvas
+    this.ctx.strokeStyle = "white";
+    this.ctx.lineWidth = this.LINE_WIDTH;
+    this.ctx.strokeRect(x, y, width, height);
+
+    // Send to socket for collaborative drawing
+    this.socket.send(
+      JSON.stringify({
+        type: "rect",
+        x,
+        y,
+        width,
+        height,
+      })
+    );
+
+    // Add to existing shapes
+    this.existingShapes.push({
+      type: "rect",
+      x,
+      y,
+      width,
+      height,
+    });
+
+    // Redraw everything
+    this.drawExistingShapes();
+  }
+
+  // Method to draw AI-generated circle
+  drawAICircle(centerX: number, centerY: number, radius: number) {
+    // Draw on the canvas
+    this.ctx.strokeStyle = "white";
+    this.ctx.lineWidth = this.LINE_WIDTH;
+    this.ctx.beginPath();
+    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    this.ctx.stroke();
+
+    // Send to socket for collaborative drawing
+    this.socket.send(
+      JSON.stringify({
+        type: "circle",
+        centerX,
+        centerY,
+        radius,
+      })
+    );
+
+    // Add to existing shapes
+    this.existingShapes.push({
+      type: "circle",
+      centerX,
+      centerY,
+      radius,
+    });
+
+    // Redraw everything
+    this.drawExistingShapes();
+  }
+
+  // Method to draw AI-generated line
+  drawAILine(startX: number, startY: number, endX: number, endY: number) {
+    // Draw on the canvas
+    this.ctx.strokeStyle = "white";
+    this.ctx.lineWidth = this.LINE_WIDTH;
+    this.ctx.beginPath();
+    this.ctx.moveTo(startX, startY);
+    this.ctx.lineTo(endX, endY);
+    this.ctx.stroke();
+
+    // Send to socket for collaborative drawing
+    this.socket.send(
+      JSON.stringify({
+        type: "line",
+        startX,
+        startY,
+        endX,
+        endY,
+      })
+    );
+
+    // Add to existing shapes
+    this.existingShapes.push({
+      type: "line",
+      startX,
+      startY,
+      endX,
+      endY,
+    });
+
+    // Redraw everything
+    this.drawExistingShapes();
+  }
+
+  // Method to draw AI-generated pencil strokes
+  drawAIPencil(points: { x: number; y: number }[]) {
+    if (points.length < 2) return;
+
+    // Draw on the canvas
+    this.ctx.strokeStyle = "white";
+    this.ctx.lineWidth = this.LINE_WIDTH;
+    this.ctx.beginPath();
+
+    points.forEach((point, index) => {
+      if (index === 0) {
+        this.ctx.moveTo(point.x, point.y);
+      } else {
+        this.ctx.lineTo(point.x, point.y);
+      }
+    });
+
+    this.ctx.stroke();
+
+    // Send to socket for collaborative drawing
+    this.socket.send(
+      JSON.stringify({
+        type: "pencil",
+        points,
+      })
+    );
+
+    // Add to existing shapes
+    this.existingShapes.push({
+      type: "pencil",
+      points,
+    });
+
+    // Redraw everything
+    this.drawExistingShapes();
   }
 }
