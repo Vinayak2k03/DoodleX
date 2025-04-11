@@ -8,12 +8,14 @@ export type Shape =
       y: number;
       width: number;
       height: number;
+      isAI?:boolean;
     }
   | {
       type: "circle";
       centerX: number;
       centerY: number;
       radius: number;
+      isAI?:boolean;
     }
   | {
       type: "line";
@@ -21,10 +23,12 @@ export type Shape =
       startY: number;
       endX: number;
       endY: number;
+      isAI?:boolean;
     }
   | {
       type: "pencil";
       points: { x: number; y: number }[];
+      isAI?:boolean;
     };
 
 export type Tool =
@@ -372,6 +376,12 @@ export class Canvas {
     this.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
+  clearAIShapes() {
+    // Filter out shapes that were added by AI
+    this.existingShapes = this.existingShapes.filter(shape => !shape.isAI);
+    this.redraw();
+  }
+
   // Method to draw AI-generated rectangle
   drawAIRect(x: number, y: number, width: number, height: number) {
     // Draw on the canvas
@@ -387,6 +397,7 @@ export class Canvas {
         y,
         width,
         height,
+        isAI:true
       })
     );
 
@@ -397,6 +408,7 @@ export class Canvas {
       y,
       width,
       height,
+      isAI:true
     });
 
     // Redraw everything
@@ -419,6 +431,7 @@ export class Canvas {
         centerX,
         centerY,
         radius,
+        isAI:true
       })
     );
 
@@ -428,6 +441,7 @@ export class Canvas {
       centerX,
       centerY,
       radius,
+      isAI:true
     });
 
     // Redraw everything
@@ -452,6 +466,7 @@ export class Canvas {
         startY,
         endX,
         endY,
+        isAI:true
       })
     );
 
@@ -462,6 +477,7 @@ export class Canvas {
       startY,
       endX,
       endY,
+      isAI:true
     });
 
     // Redraw everything
@@ -492,6 +508,7 @@ export class Canvas {
       JSON.stringify({
         type: "pencil",
         points,
+        isAI:true
       })
     );
 
@@ -499,6 +516,7 @@ export class Canvas {
     this.existingShapes.push({
       type: "pencil",
       points,
+      isAI:true
     });
 
     // Redraw everything

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize the Google Generative AI with API key
-// Change this to use GOOGLE_API_KEY since that's what you've defined in .env
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
@@ -12,8 +11,8 @@ async function promptToDrawingCommands(prompt: string): Promise<any[]> {
     console.log(`Generating drawing for prompt: "${prompt}"`);
     
     // Canvas dimensions for reference
-    const canvasWidth = 800;
-    const canvasHeight = 600;
+    const canvasWidth = 1920;
+    const canvasHeight = 900;
     
     // System prompt to guide the AI
     const systemPrompt = `You are an AI that converts text descriptions into drawing commands. 
@@ -25,6 +24,19 @@ You must respond with a valid JSON array of drawing commands. Each command shoul
 3. Line: { "type": "line", "startX": number, "startY": number, "endX": number, "endY": number }
 
 The canvas is ${canvasWidth}x${canvasHeight} pixels. Position (0,0) is the top-left corner.
+
+POSITIONAL GUIDELINES:
+- "top-left" refers to the area near (100, 100)
+- "top-right" refers to the area near (${canvasWidth - 100}, 100)
+- "bottom-left" refers to the area near (100, ${canvasHeight - 100})
+- "bottom-right" refers to the area near (${canvasWidth - 100}, ${canvasHeight - 100})
+- "center" refers to the area near (${canvasWidth/2}, ${canvasHeight/2})
+- "top" refers to the area near (${canvasWidth/2}, 100)
+- "bottom" refers to the area near (${canvasWidth/2}, ${canvasHeight - 100})
+- "left" refers to the area near (100, ${canvasHeight/2})
+- "right" refers to the area near (${canvasWidth - 100}, ${canvasHeight/2})
+
+Pay careful attention to positional words in the prompt and place shapes accordingly.
 Create a simple but recognizable representation using 5-15 shapes.
 ONLY respond with the JSON array, no other text.`;
 
@@ -93,6 +105,11 @@ ONLY respond with the JSON array, no other text.`;
         throw new Error("No valid drawing commands found");
       }
       
+      // Mark all commands as AI-generated
+      validatedCommands.forEach(cmd => {
+        cmd.isAI = true;
+      });
+      
       return validatedCommands;
     } catch (parseError) {
       console.error("Error parsing AI response:", parseError);
@@ -102,7 +119,12 @@ ONLY respond with the JSON array, no other text.`;
       const jsonMatch = text.match(/\[\s*\{.*\}\s*\]/s);
       if (jsonMatch) {
         try {
-          return JSON.parse(jsonMatch[0]);
+          const parsedCommands = JSON.parse(jsonMatch[0]);
+          // Mark all commands as AI-generated
+          parsedCommands.forEach(cmd => {
+            cmd.isAI = true;
+          });
+          return parsedCommands;
         } catch (e) {
           console.error("Failed to extract JSON with regex");
         }
@@ -118,61 +140,101 @@ ONLY respond with the JSON array, no other text.`;
   }
 }
 
+// Helper function to determine position from prompt
+function getPositionFromPrompt(prompt: string, canvasWidth: number, canvasHeight: number): { x: number, y: number } {
+  // Default position (center of canvas)
+  const defaultPosition = { x: canvasWidth / 2, y: canvasHeight / 2 };
+  
+  // Check for positional keywords
+  if (prompt.includes("top") || prompt.includes("upper")) {
+    if (prompt.includes("left")) {
+      return { x: 100, y: 100 }; // Top-left
+    } else if (prompt.includes("right")) {
+      return { x: canvasWidth - 100, y: 100 }; // Top-right
+    } else {
+      return { x: canvasWidth / 2, y: 100 }; // Top-center
+    }
+  } else if (prompt.includes("bottom") || prompt.includes("lower")) {
+    if (prompt.includes("left")) {
+      return { x: 100, y: canvasHeight - 100 }; // Bottom-left
+    } else if (prompt.includes("right")) {
+      return { x: canvasWidth - 100, y: canvasHeight - 100 }; // Bottom-right
+    } else {
+      return { x: canvasWidth / 2, y: canvasHeight - 100 }; // Bottom-center
+    }
+  } else if (prompt.includes("left")) {
+    return { x: 100, y: canvasHeight / 2 }; // Left-center
+  } else if (prompt.includes("right")) {
+    return { x: canvasWidth - 100, y: canvasHeight / 2 }; // Right-center
+  }
+  
+  return defaultPosition;
+}
+
 // Fallback function for when AI generation fails
 function fallbackDrawing(prompt: string, canvasWidth: number, canvasHeight: number): any[] {
   console.log("Using fallback drawing for:", prompt);
   const lowerPrompt = prompt.toLowerCase();
   
+  // Determine position from prompt
+  const position = getPositionFromPrompt(lowerPrompt, canvasWidth, canvasHeight);
+  
   if (lowerPrompt.includes("circle")) {
     return [
       {
         type: "circle",
-        centerX: canvasWidth / 2,
-        centerY: canvasHeight / 2,
-        radius: 100
+        centerX: position.x,
+        centerY: position.y,
+        radius: 100,
+        isAI: true
       }
     ];
   } else if (lowerPrompt.includes("square") || lowerPrompt.includes("rectangle")) {
     return [
       {
         type: "rect",
-        x: canvasWidth / 2 - 100,
-        y: canvasHeight / 2 - 100,
+        x: position.x - 100,
+        y: position.y - 100,
         width: 200,
-        height: 200
+        height: 200,
+        isAI: true
       }
     ];
   } else if (lowerPrompt.includes("face") || lowerPrompt.includes("smiley")) {
-    // Create a simple face
+    // Create a simple face at the specified position
     return [
       // Face
       {
         type: "circle",
-        centerX: canvasWidth / 2,
-        centerY: canvasHeight / 2,
-        radius: 100
+        centerX: position.x,
+        centerY: position.y,
+        radius: 100,
+        isAI: true
       },
       // Left eye
       {
         type: "circle",
-        centerX: canvasWidth / 2 - 40,
-        centerY: canvasHeight / 2 - 30,
-        radius: 15
+        centerX: position.x - 40,
+        centerY: position.y - 30,
+        radius: 15,
+        isAI: true
       },
       // Right eye
       {
         type: "circle",
-        centerX: canvasWidth / 2 + 40,
-        centerY: canvasHeight / 2 - 30,
-        radius: 15
+        centerX: position.x + 40,
+        centerY: position.y - 30,
+        radius: 15,
+        isAI: true
       },
       // Smile
       {
         type: "line",
-        startX: canvasWidth / 2 - 40,
-        startY: canvasHeight / 2 + 30,
-        endX: canvasWidth / 2 + 40,
-        endY: canvasHeight / 2 + 30
+        startX: position.x - 40,
+        startY: position.y + 30,
+        endX: position.x + 40,
+        endY: position.y + 30,
+        isAI: true
       }
     ];
   } else if (lowerPrompt.includes("house") || lowerPrompt.includes("home")) {
@@ -180,33 +242,37 @@ function fallbackDrawing(prompt: string, canvasWidth: number, canvasHeight: numb
       // House base
       {
         type: "rect",
-        x: canvasWidth / 2 - 100,
-        y: canvasHeight / 2 - 80,
+        x: position.x - 100,
+        y: position.y - 80,
         width: 200,
-        height: 150
+        height: 150,
+        isAI: true
       },
       // Roof
       {
         type: "line",
-        startX: canvasWidth / 2 - 120,
-        startY: canvasHeight / 2 - 80,
-        endX: canvasWidth / 2,
-        endY: canvasHeight / 2 - 150
+        startX: position.x - 120,
+        startY: position.y - 80,
+        endX: position.x,
+        endY: position.y - 150,
+        isAI: true
       },
       {
         type: "line",
-        startX: canvasWidth / 2,
-        startY: canvasHeight / 2 - 150,
-        endX: canvasWidth / 2 + 120,
-        endY: canvasHeight / 2 - 80
+        startX: position.x,
+        startY: position.y - 150,
+        endX: position.x + 120,
+        endY: position.y - 80,
+        isAI: true
       },
       // Door
       {
         type: "rect",
-        x: canvasWidth / 2 - 30,
-        y: canvasHeight / 2 + 20,
+        x: position.x - 30,
+        y: position.y + 20,
         width: 60,
-        height: 50
+        height: 50,
+        isAI: true
       }
     ];
   }
@@ -215,23 +281,26 @@ function fallbackDrawing(prompt: string, canvasWidth: number, canvasHeight: numb
   return [
     {
       type: "circle",
-      centerX: canvasWidth / 3,
-      centerY: canvasHeight / 3,
-      radius: 50
+      centerX: position.x - 100,
+      centerY: position.y - 100,
+      radius: 50,
+      isAI: true
     },
     {
       type: "rect",
-      x: canvasWidth / 2,
-      y: canvasHeight / 2,
+      x: position.x,
+      y: position.y,
       width: 150,
-      height: 100
+      height: 100,
+      isAI: true
     },
     {
       type: "line",
-      startX: 100,
-      startY: 100,
-      endX: 300,
-      endY: 300
+      startX: position.x - 150,
+      startY: position.y - 150,
+      endX: position.x + 150,
+      endY: position.y + 150,
+      isAI: true
     }
   ];
 }
