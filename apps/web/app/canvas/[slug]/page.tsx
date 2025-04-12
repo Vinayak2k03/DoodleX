@@ -19,8 +19,9 @@ export default function CanvasLanding() {
 
     if(dashIndex>0){
       const id=slugStr.substring(0,dashIndex);
-      const name=slugStr.substring(dashIndex+1);
-      return [id,name];
+      const encodedName=slugStr.substring(dashIndex+1);
+      const decodedName=decodeURIComponent(encodedName);
+      return [id,decodedName];
     }
 
     return [slugStr,''];

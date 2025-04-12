@@ -250,7 +250,7 @@ export default function Dashboard() {
                           variant="default"
                           size="default"
                           className="w-full transition-all hover:shadow-lg group-hover:bg-primary group-hover:scale-[1.02]"
-                          onClick={() => router.push(`/canvas/${room.id}-${room.slug}`)}
+                          onClick={() => router.push(`/canvas/${room.id}-${encodeURIComponent(room.slug)}`)}
                         >
                           <span className="flex items-center justify-center gap-2 py-1">
                             Join Room
@@ -291,7 +291,7 @@ export default function Dashboard() {
                           </button>
                           <Button
                             variant="default"
-                            onClick={() => router.push(`/canvas/${room.id}-${room.slug}`)}
+                            onClick={() => router.push(`/canvas/${room.id}-${encodeURIComponent(room.slug)}`)}
                             className="transition-all hover:shadow-md group-hover:bg-primary"
                           >
                             <span className="flex items-center gap-2">
