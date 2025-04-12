@@ -96,7 +96,7 @@ export default function PromptBar({ onGenerateDrawing }: PromptBarProps) {
         </Button>
       </div>
       <p className="text-xs text-muted-foreground mt-1 text-center">
-        Powered by Gemini AI • Press Enter to generate
+        Press Enter to generate
       </p>
     </div>
   );

@@ -5,13 +5,26 @@ import { useParams } from "next/navigation";
 import { Button } from "@repo/ui/components/button";
 import { ArrowLeft, Users, Share2, Download } from "lucide-react";
 import CanvasWrapper from "@/components/CanvasWrapper";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export default function CanvasLanding() {
   const params = useParams();
   const { slug } = params;
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  const [roomId,roomName]=useMemo(()=>{
+    const slugStr=slug as string;
+    const dashIndex=slugStr.indexOf('-');
+
+    if(dashIndex>0){
+      const id=slugStr.substring(0,dashIndex);
+      const name=slugStr.substring(dashIndex+1);
+      return [id,name];
+    }
+
+    return [slugStr,''];
+  },[slug]);
 
   // Hide toolbar on scroll down, show on scroll up
   useEffect(() => {
@@ -41,7 +54,7 @@ export default function CanvasLanding() {
               </Button>
             </Link>
             <div className="ml-2">
-              <h1 className="text-lg font-medium">Canvas - {slug}</h1>
+              <h1 className="text-lg font-medium">{roomName?`${roomName}`:`Canvas-${roomId}`}</h1>
               <p className="text-xs text-muted-foreground">Last saved just now</p>
             </div>
           </div>
@@ -65,7 +78,7 @@ export default function CanvasLanding() {
       
       {/* Canvas with subtle padding to account for the header */}
       <div className="pt-14">
-        <CanvasWrapper roomId={slug as string} />
+        <CanvasWrapper roomId={roomId} />
       </div>
     </div>
   );

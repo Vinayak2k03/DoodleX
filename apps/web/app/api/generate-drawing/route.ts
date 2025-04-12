@@ -121,7 +121,7 @@ ONLY respond with the JSON array, no other text.`;
         try {
           const parsedCommands = JSON.parse(jsonMatch[0]);
           // Mark all commands as AI-generated
-          parsedCommands.forEach(cmd => {
+          parsedCommands.forEach((cmd) => {
             cmd.isAI = true;
           });
           return parsedCommands;
