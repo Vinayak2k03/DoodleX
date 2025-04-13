@@ -8,14 +8,14 @@ export type Shape =
       y: number;
       width: number;
       height: number;
-      isAI?:boolean;
+      isAI?: boolean;
     }
   | {
       type: "circle";
       centerX: number;
       centerY: number;
       radius: number;
-      isAI?:boolean;
+      isAI?: boolean;
     }
   | {
       type: "line";
@@ -23,12 +23,12 @@ export type Shape =
       startY: number;
       endX: number;
       endY: number;
-      isAI?:boolean;
+      isAI?: boolean;
     }
   | {
       type: "pencil";
       points: { x: number; y: number }[];
-      isAI?:boolean;
+      isAI?: boolean;
     };
 
 export type Tool =
@@ -90,7 +90,21 @@ export class Canvas {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.existingShapes = await getExistingShapes(this.roomId);
     this.drawExistingShapes();
+
+    window.addEventListener("resize", this.handleResize);
   }
+
+  // Handle window resize events
+  handleResize = () => {
+    const currentTransform = this.ctx.getTransform();
+
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+
+    this.ctx.fillStyle = "black";
+    this.ctx.setTransform(currentTransform);
+    this.redraw();
+  };
 
   drawExistingShapes() {
     this.existingShapes.forEach((shape) => {
@@ -137,10 +151,37 @@ export class Canvas {
     this.ctx.restore();
   }
 
+  touchMoveHandler = (e: TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent("mousemove", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        button: this.selectedTool === "pan" ? 2 : 0,
+      });
+      this.mouseMoveHandler(mouseEvent);
+    }
+  };
+
+  touchEndHandler = (e: TouchEvent) => {
+    e.preventDefault();
+    const mouseEvent = new MouseEvent("mouseup", {
+      clientX: e.changedTouches[0]?.clientX || 0,
+      clientY: e.changedTouches[0]?.clientY || 0,
+      button: this.selectedTool === "pan" ? 2 : 0,
+    });
+    this.mouseUpHandler(mouseEvent);
+  };
+
   destroy() {
     this.canvas.removeEventListener("mousedown", this.mouseDownHandler);
     this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
+    this.canvas.removeEventListener("touchstart", this.touchStartHandler);
+    this.canvas.removeEventListener("touchmove", this.touchMoveHandler);
+    this.canvas.removeEventListener("touchend", this.touchEndHandler);
+    window.removeEventListener("resize", this.handleResize);
   }
 
   setTool(tool: Tool) {
@@ -226,8 +267,9 @@ export class Canvas {
     }
 
     this.clicked = true;
-    this.startX = (e.clientX - this.offsetX) / this.scale;
-    this.startY = (e.clientY - this.offsetY) / this.scale;
+    const point = this.screenToCanvas(e.clientX, e.clientY);
+    this.startX = point.x;
+    this.startY = point.y;
 
     if (this.selectedTool === "pencil") {
       this.pencilPoints = [{ x: this.startX, y: this.startY }];
@@ -235,10 +277,9 @@ export class Canvas {
       this.ctx.moveTo(this.startX, this.startY);
       this.ctx.strokeStyle = "white";
       this.ctx.lineCap = "round";
+      this.ctx.lineJoin = "round";
     }
   };
-
-  //   CANVAS MOVES NOT THE SHAPES
 
   mouseUpHandler = (e: MouseEvent) => {
     if (this.isPanning) {
@@ -252,42 +293,54 @@ export class Canvas {
     }
 
     this.clicked = false;
-
-    const endX = (e.clientX - this.offsetX) / this.scale;
-    const endY = (e.clientY - this.offsetY) / this.scale;
+    const point = this.screenToCanvas(e.clientX, e.clientY);
+    const endX = point.x;
+    const endY = point.y;
 
     if (this.selectedTool === "pencil") {
-      const shape: Shape = {
-        type: "pencil",
-        points: this.pencilPoints,
-      };
-      this.existingShapes.push(shape);
-      this.socket.send(
-        JSON.stringify({
-          type: "shape_update",
-          message: JSON.stringify(shape),
-          roomId: Number(this.roomId),
-        })
-      );
-      this.pencilPoints = [];
-    } else {
-      const width = endX - this.startX;
-      const height = endY - this.startY;
+      if (this.pencilPoints.length > 1) {
+        const shape: Shape = {
+          type: "pencil",
+          points: [...this.pencilPoints], // Create a new array to avoid reference issues
+        };
 
+        this.existingShapes.push(shape);
+        this.socket.send(
+          JSON.stringify({
+            type: "shape_update",
+            message: JSON.stringify(shape),
+            roomId: Number(this.roomId),
+          })
+        );
+        this.pencilPoints = [];
+        this.redraw();
+      }
+    } else {
       let shape: Shape | null = null;
 
       if (this.selectedTool === "rect") {
+        // Fix: Create rectangle with correct coordinates for any drag direction
+        const x = Math.min(this.startX, endX);
+        const y = Math.min(this.startY, endY);
+        const width = Math.abs(endX - this.startX);
+        const height = Math.abs(endY - this.startY);
+
         shape = {
           type: "rect",
-          x: this.startX,
-          y: this.startY,
+          x,
+          y,
           width,
           height,
         };
       } else if (this.selectedTool === "circle") {
-        const radius = Math.max(width, height) / 2;
-        const centerX = this.startX + radius;
-        const centerY = this.startY + radius;
+        // Fix: Calculate circle properly from center
+        const centerX = (this.startX + endX) / 2;
+        const centerY = (this.startY + endY) / 2;
+        const radius = Math.sqrt(
+          Math.pow((endX - this.startX) / 2, 2) +
+            Math.pow((endY - this.startY) / 2, 2)
+        );
+
         shape = {
           type: "circle",
           centerX,
@@ -313,9 +366,17 @@ export class Canvas {
             roomId: Number(this.roomId),
           })
         );
+        this.redraw();
       }
     }
   };
+
+  screenToCanvas(screenX: number, screenY: number): { x: number; y: number } {
+    return {
+      x: (screenX - this.offsetX) / this.scale,
+      y: (screenY - this.offsetY) / this.scale,
+    };
+  }
 
   mouseMoveHandler = (e: MouseEvent) => {
     if (this.isPanning && this.lastPanPoint) {
@@ -338,26 +399,50 @@ export class Canvas {
       if (this.selectedTool === "pencil") {
         const point = { x, y };
         this.pencilPoints.push(point);
+
+        // Redraw everything to ensure consistent appearance
+        this.redraw();
+
+        // Draw current stroke on top
+        this.ctx.strokeStyle = "white";
         this.ctx.lineWidth = this.LINE_WIDTH;
-        this.ctx.lineTo(x, y);
+        this.ctx.lineCap = "round";
+        this.ctx.lineJoin = "round";
+        this.ctx.beginPath();
+
+        this.pencilPoints.forEach((point, index) => {
+          if (index === 0) {
+            this.ctx.moveTo(point.x, point.y);
+          } else {
+            this.ctx.lineTo(point.x, point.y);
+          }
+        });
+
         this.ctx.stroke();
       } else {
         this.redraw();
         this.ctx.strokeStyle = "white";
         this.ctx.lineWidth = this.LINE_WIDTH;
 
-        const width = x - this.startX;
-        const height = y - this.startY;
-
         if (this.selectedTool === "rect") {
-          this.ctx.strokeRect(this.startX, this.startY, width, height);
+          // Fix: Handle rectangle drawing in any direction
+          const rectX = Math.min(this.startX, x);
+          const rectY = Math.min(this.startY, y);
+          const width = Math.abs(x - this.startX);
+          const height = Math.abs(y - this.startY);
+
+          this.ctx.strokeRect(rectX, rectY, width, height);
         } else if (this.selectedTool === "circle") {
-          const radius = Math.max(width, height) / 2;
-          const centerX = this.startX + radius;
-          const centerY = this.startY + radius;
+          // Fix: Calculate circle from center point
+          const centerX = (this.startX + x) / 2;
+          const centerY = (this.startY + y) / 2;
+          const radius = Math.sqrt(
+            Math.pow((x - this.startX) / 2, 2) +
+              Math.pow((y - this.startY) / 2, 2)
+          );
 
           this.ctx.beginPath();
-          this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
+          this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
           this.ctx.stroke();
         } else if (this.selectedTool === "line") {
           this.ctx.beginPath();
@@ -374,33 +459,21 @@ export class Canvas {
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
     this.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Add touch event handlers
+    this.canvas.addEventListener("touchstart", this.touchStartHandler);
+    this.canvas.addEventListener("touchmove", this.touchMoveHandler);
+    this.canvas.addEventListener("touchend", this.touchEndHandler);
   }
 
   clearAIShapes() {
     // Filter out shapes that were added by AI
-    this.existingShapes = this.existingShapes.filter(shape => !shape.isAI);
+    this.existingShapes = this.existingShapes.filter((shape) => !shape.isAI);
     this.redraw();
   }
 
   // Method to draw AI-generated rectangle
   drawAIRect(x: number, y: number, width: number, height: number) {
-    // Draw on the canvas
-    this.ctx.strokeStyle = "white";
-    this.ctx.lineWidth = this.LINE_WIDTH;
-    this.ctx.strokeRect(x, y, width, height);
-
-    // Send to socket for collaborative drawing
-    this.socket.send(
-      JSON.stringify({
-        type: "rect",
-        x,
-        y,
-        width,
-        height,
-        isAI:true
-      })
-    );
-
     // Add to existing shapes
     this.existingShapes.push({
       type: "rect",
@@ -408,68 +481,61 @@ export class Canvas {
       y,
       width,
       height,
-      isAI:true
+      isAI: true,
     });
-
-    // Redraw everything
-    this.drawExistingShapes();
-  }
-
-  // Method to draw AI-generated circle
-  drawAICircle(centerX: number, centerY: number, radius: number) {
-    // Draw on the canvas
-    this.ctx.strokeStyle = "white";
-    this.ctx.lineWidth = this.LINE_WIDTH;
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    this.ctx.stroke();
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
-        type: "circle",
-        centerX,
-        centerY,
-        radius,
-        isAI:true
+        type: "shape_update",
+        message: JSON.stringify({
+          type: "rect",
+          x,
+          y,
+          width,
+          height,
+          isAI: true,
+        }),
+        roomId: Number(this.roomId),
       })
     );
 
+    // Redraw everything
+    this.redraw();
+  }
+
+  // Method to draw AI-generated circle
+  drawAICircle(centerX: number, centerY: number, radius: number) {
     // Add to existing shapes
     this.existingShapes.push({
       type: "circle",
       centerX,
       centerY,
       radius,
-      isAI:true
+      isAI: true,
     });
-
-    // Redraw everything
-    this.drawExistingShapes();
-  }
-
-  // Method to draw AI-generated line
-  drawAILine(startX: number, startY: number, endX: number, endY: number) {
-    // Draw on the canvas
-    this.ctx.strokeStyle = "white";
-    this.ctx.lineWidth = this.LINE_WIDTH;
-    this.ctx.beginPath();
-    this.ctx.moveTo(startX, startY);
-    this.ctx.lineTo(endX, endY);
-    this.ctx.stroke();
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
-        type: "line",
-        startX,
-        startY,
-        endX,
-        endY,
-        isAI:true
+        type: "shape_update",
+        message: JSON.stringify({
+          type: "circle",
+          centerX,
+          centerY,
+          radius,
+          isAI: true,
+        }),
+        roomId: Number(this.roomId),
       })
     );
 
+    // Redraw everything
+    this.redraw();
+  }
+
+  // Method to draw AI-generated line
+  drawAILine(startX: number, startY: number, endX: number, endY: number) {
     // Add to existing shapes
     this.existingShapes.push({
       type: "line",
@@ -477,49 +543,54 @@ export class Canvas {
       startY,
       endX,
       endY,
-      isAI:true
+      isAI: true,
     });
 
+    // Send to socket for collaborative drawing
+    this.socket.send(
+      JSON.stringify({
+        type: "shape_update",
+        message: JSON.stringify({
+          type: "line",
+          startX,
+          startY,
+          endX,
+          endY,
+          isAI: true,
+        }),
+        roomId: Number(this.roomId),
+      })
+    );
+
     // Redraw everything
-    this.drawExistingShapes();
+    this.redraw();
   }
 
   // Method to draw AI-generated pencil strokes
   drawAIPencil(points: { x: number; y: number }[]) {
     if (points.length < 2) return;
 
-    // Draw on the canvas
-    this.ctx.strokeStyle = "white";
-    this.ctx.lineWidth = this.LINE_WIDTH;
-    this.ctx.beginPath();
-
-    points.forEach((point, index) => {
-      if (index === 0) {
-        this.ctx.moveTo(point.x, point.y);
-      } else {
-        this.ctx.lineTo(point.x, point.y);
-      }
+    // Add to existing shapes
+    this.existingShapes.push({
+      type: "pencil",
+      points: [...points], // Clone the array to avoid reference issues
+      isAI: true,
     });
-
-    this.ctx.stroke();
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
-        type: "pencil",
-        points,
-        isAI:true
+        type: "shape_update",
+        message: JSON.stringify({
+          type: "pencil",
+          points,
+          isAI: true,
+        }),
+        roomId: Number(this.roomId),
       })
     );
 
-    // Add to existing shapes
-    this.existingShapes.push({
-      type: "pencil",
-      points,
-      isAI:true
-    });
-
     // Redraw everything
-    this.drawExistingShapes();
+    this.redraw();
   }
 }
