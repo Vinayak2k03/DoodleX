@@ -383,8 +383,8 @@ export class Canvas {
 
       if (shape) {
         // Add a unique client identifier
-        shape.source = 'client-' + Math.random().toString(36).substring(2, 9);
-        
+        shape.source = "client-" + Math.random().toString(36).substring(2, 9);
+
         this.existingShapes.push(shape);
         this.socket.send(
           JSON.stringify({
@@ -514,16 +514,16 @@ export class Canvas {
 
   // Method to draw AI-generated rectangle
   drawAIRect(x: number, y: number, width: number, height: number) {
-  // Create shape object with source tracking
-  const shape = {
-    type: "rect",
-    x,
-    y,
-    width,
-    height,
-    isAI: true,
-    source: 'ai-' + Math.random().toString(36).substring(2, 9)
-  };
+    // Create shape object with source tracking
+    const shape = {
+      type: "rect",
+      x,
+      y,
+      width,
+      height,
+      isAI: true,
+      source: "ai-" + Math.random().toString(36).substring(2, 9),
+    };
 
     // Add to existing shapes
     this.existingShapes.push(shape);
@@ -543,26 +543,24 @@ export class Canvas {
 
   // Method to draw AI-generated circle
   drawAICircle(centerX: number, centerY: number, radius: number) {
-    // Add to existing shapes
-    this.existingShapes.push({
+    // Create shape object with source tracking
+    const shape = {
       type: "circle",
       centerX,
       centerY,
       radius,
       isAI: true,
-    });
+      source: "ai-" + Math.random().toString(36).substring(2, 9),
+    };
+
+    // Add to existing shapes
+    this.existingShapes.push(shape);
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
         type: "shape_update",
-        message: JSON.stringify({
-          type: "circle",
-          centerX,
-          centerY,
-          radius,
-          isAI: true,
-        }),
+        message: JSON.stringify(shape),
         roomId: Number(this.roomId),
       })
     );
@@ -573,28 +571,25 @@ export class Canvas {
 
   // Method to draw AI-generated line
   drawAILine(startX: number, startY: number, endX: number, endY: number) {
-    // Add to existing shapes
-    this.existingShapes.push({
+    // Create shape object with source tracking
+    const shape = {
       type: "line",
       startX,
       startY,
       endX,
       endY,
       isAI: true,
-    });
+      source: "ai-" + Math.random().toString(36).substring(2, 9),
+    };
+
+    // Add to existing shapes
+    this.existingShapes.push(shape);
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
         type: "shape_update",
-        message: JSON.stringify({
-          type: "line",
-          startX,
-          startY,
-          endX,
-          endY,
-          isAI: true,
-        }),
+        message: JSON.stringify(shape),
         roomId: Number(this.roomId),
       })
     );
@@ -607,22 +602,22 @@ export class Canvas {
   drawAIPencil(points: { x: number; y: number }[]) {
     if (points.length < 2) return;
 
-    // Add to existing shapes
-    this.existingShapes.push({
+    // Create shape object with source tracking
+    const shape = {
       type: "pencil",
       points: [...points], // Clone the array to avoid reference issues
       isAI: true,
-    });
+      source: "ai-" + Math.random().toString(36).substring(2, 9),
+    };
+
+    // Add to existing shapes
+    this.existingShapes.push(shape);
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
         type: "shape_update",
-        message: JSON.stringify({
-          type: "pencil",
-          points,
-          isAI: true,
-        }),
+        message: JSON.stringify(shape),
         roomId: Number(this.roomId),
       })
     );
