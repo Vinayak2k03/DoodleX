@@ -90,40 +90,44 @@ wss.on("connection", (ws, request) => {
       if (data.type === "shape_update") {
         const roomId = Number(data.roomId);
         if (!roomId) {
+          console.error("Invalid roomId:", data.roomId);
           return;
         }
 
-        // Check if the user is in the room
-        const userRoom = users.find(
-          (user) => user.userId === userId && user.rooms.includes(roomId)
+        // Log the message for debugging
+        console.log(
+          `Received shape update for room ${roomId} from user ${userId}`
         );
 
-        if (!userRoom) {
-          return;
-        }
+        try {
+          // Save to the database
+          await prismaClient.chat.create({
+            data: {
+              roomId,
+              userId,
+              message: data.message,
+            },
+          });
 
-        // Save to the database
-        await prismaClient.chat.create({
-          data: {
-            roomId,
-            userId,
-            message: data.message,
-          },
-        });
-
-        // Broadcast to all users in the room
-        users.forEach((user) => {
-          if (user.rooms.includes(roomId)) {
+          // Broadcast to ALL users in the room
+          let broadcastCount = 0;
+          users.forEach((user) => {
             user.ws.send(
               JSON.stringify({
                 type: "shape_update",
+                userId: user.userId === userId ? "self" : userId, // Mark as 'self' if sending back to originator
                 message: data.message,
-                roomId,
-                userId,
+                roomId: roomId,
               })
             );
-          }
-        });
+          });
+
+          console.log(
+            `Broadcasted shape to ${broadcastCount} users in room ${roomId}`
+          );
+        } catch (error) {
+          console.error("Error handling shape update:", error);
+        }
       }
 
       if (data.type === "leave") {

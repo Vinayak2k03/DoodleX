@@ -18,15 +18,24 @@ export default function CanvasWrapper({ roomId }: { roomId: string }) {
     );
 
     const handleMessage = (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "join") {
-        console.log("Successfully joined room:", data.roomId);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("CanvasWrapper received message:", data.type);
+        
+        if (data.type === "join") {
+          console.log("Successfully joined room:", data.roomId);
+        } else if (data.type === "shape_update") {
+          console.log("Shape update received in wrapper");
+        }
+      } catch (error) {
+        console.error("Error parsing message:", error);
       }
     };
 
     socket.addEventListener("message", handleMessage);
 
     return () => {
+      console.log("Leaving room:", roomId);
       socket.removeEventListener("message", handleMessage);
       socket.send(
         JSON.stringify({

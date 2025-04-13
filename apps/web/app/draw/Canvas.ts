@@ -197,14 +197,38 @@ export class Canvas {
     this.socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
+        console.log("Received WebSocket message:", message.type);
+
         if (message.type === "shape_update") {
           const shape = JSON.parse(message.message);
-          this.existingShapes.push(shape);
-          this.redraw();
+          console.log("Received shape update:", shape.type);
+
+          // Add source tracking to avoid duplicates
+          if (!shape.source) {
+            shape.source = message.userId || "unknown";
+          }
+
+          // Check if this shape is already in our shape collection
+          const isDuplicate = this.existingShapes.some((existingShape) => {
+            // For simple comparison, check exact string match
+            return JSON.stringify(existingShape) === JSON.stringify(shape);
+          });
+
+          if (!isDuplicate) {
+            console.log("Adding shape to canvas from:", shape.source);
+            this.existingShapes.push(shape);
+            this.redraw();
+          } else {
+            console.log("Ignoring duplicate shape");
+          }
         }
       } catch (err) {
         console.log("Error handling WebSocket message:", err);
       }
+    };
+
+    this.socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
     };
 
     this.canvas.addEventListener("wheel", (e) => {
@@ -358,6 +382,9 @@ export class Canvas {
       }
 
       if (shape) {
+        // Add a unique client identifier
+        shape.source = 'client-' + Math.random().toString(36).substring(2, 9);
+        
         this.existingShapes.push(shape);
         this.socket.send(
           JSON.stringify({
@@ -368,6 +395,19 @@ export class Canvas {
         );
         this.redraw();
       }
+    }
+  };
+
+  touchStartHandler = (e: TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent("mousedown", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        button: this.selectedTool === "pan" ? 2 : 0,
+      });
+      this.mouseDownHandler(mouseEvent);
     }
   };
 
@@ -474,28 +514,25 @@ export class Canvas {
 
   // Method to draw AI-generated rectangle
   drawAIRect(x: number, y: number, width: number, height: number) {
+  // Create shape object with source tracking
+  const shape = {
+    type: "rect",
+    x,
+    y,
+    width,
+    height,
+    isAI: true,
+    source: 'ai-' + Math.random().toString(36).substring(2, 9)
+  };
+
     // Add to existing shapes
-    this.existingShapes.push({
-      type: "rect",
-      x,
-      y,
-      width,
-      height,
-      isAI: true,
-    });
+    this.existingShapes.push(shape);
 
     // Send to socket for collaborative drawing
     this.socket.send(
       JSON.stringify({
         type: "shape_update",
-        message: JSON.stringify({
-          type: "rect",
-          x,
-          y,
-          width,
-          height,
-          isAI: true,
-        }),
+        message: JSON.stringify(shape),
         roomId: Number(this.roomId),
       })
     );
