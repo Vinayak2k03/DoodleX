@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/ui/components/button";
 import Link from "next/link";
-import { ArrowRight, Pencil, Share2, Users, Sparkles, ChevronRight, Code, PenTool } from "lucide-react";
+import { ArrowRight, Share2, Users, Sparkles, ChevronRight, PenTool } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 

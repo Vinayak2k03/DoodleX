@@ -6,8 +6,38 @@ import { Input } from "@repo/ui/components/input";
 import { Loader2, Sparkles, Wand2 } from "lucide-react";
 import { useToast } from "@repo/ui/hooks/use-toast";
 
+type BaseDrawingCommand = {
+  type: string;
+  isAI?: boolean;
+};
+
+type CircleCommand = BaseDrawingCommand & {
+  type: "circle";
+  centerX: number;
+  centerY: number;
+  radius: number;
+};
+
+type RectCommand = BaseDrawingCommand & {
+  type: "rect";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type LineCommand = BaseDrawingCommand & {
+  type: "line";
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+};
+
+type DrawingCommand = CircleCommand | RectCommand | LineCommand;
+
 interface PromptBarProps {
-  onGenerateDrawing: (drawingCommands: any[]) => void;
+  onGenerateDrawing: (drawingCommands: DrawingCommand[]) => void;
 }
 
 export default function PromptBar({ onGenerateDrawing }: PromptBarProps) {
@@ -17,31 +47,31 @@ export default function PromptBar({ onGenerateDrawing }: PromptBarProps) {
 
   const handleGenerateDrawing = async () => {
     if (!prompt.trim()) return;
-    
+
     try {
       setIsGenerating(true);
-      
+
       // Call your API endpoint that uses Gemini
       const response = await fetch("/api/generate-drawing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-      
+
       if (!response.ok) {
         console.log(response);
         throw new Error(`Failed to generate drawing: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.error) {
         throw new Error(data.error);
       }
-      
+
       onGenerateDrawing(data.drawingCommands);
       setPrompt("");
-      
+
       toast({
         title: "Drawing generated!",
         description: "Your drawing has been created based on the prompt.",
@@ -50,7 +80,8 @@ export default function PromptBar({ onGenerateDrawing }: PromptBarProps) {
       console.error("Error generating drawing:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate drawing",
+        description:
+          error instanceof Error ? error.message : "Failed to generate drawing",
         variant: "destructive",
       });
     } finally {

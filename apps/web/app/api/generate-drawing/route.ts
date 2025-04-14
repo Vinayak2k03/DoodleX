@@ -1,12 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerateContentResult } from "@google/generative-ai";
+
+// Define types for drawing commands
+type BaseDrawingCommand = {
+  type: string;
+  isAI?: boolean;
+};
+
+type CircleCommand = BaseDrawingCommand & {
+  type: "circle";
+  centerX: number;
+  centerY: number;
+  radius: number;
+};
+
+type RectCommand = BaseDrawingCommand & {
+  type: "rect";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type LineCommand = BaseDrawingCommand & {
+  type: "line";
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+};
+
+type DrawingCommand = CircleCommand | RectCommand | LineCommand;
 
 // Initialize the Google Generative AI with API key
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
 // Process prompt to drawing commands
-async function promptToDrawingCommands(prompt: string): Promise<any[]> {
+async function promptToDrawingCommands(prompt: string): Promise<DrawingCommand[]> {
   try {
     console.log(`Generating drawing for prompt: "${prompt}"`);
     
@@ -41,7 +72,7 @@ Create a simple but recognizable representation using 5-15 shapes.
 ONLY respond with the JSON array, no other text.`;
 
     // Use Gemini to generate the drawing
-    const result = await model.generateContent([
+    const result: GenerateContentResult = await model.generateContent([
       { text: systemPrompt },
       { text: `Create drawing commands for: ${prompt}` }
     ]);
@@ -52,14 +83,15 @@ ONLY respond with the JSON array, no other text.`;
     // Try to extract valid JSON from the response
     try {
       // First attempt: Direct parsing
-      let drawingCommands = JSON.parse(text);
+      let drawingCommands: unknown = JSON.parse(text);
       
       // Normalize: If not array, look for array property
       if (!Array.isArray(drawingCommands)) {
-        drawingCommands = drawingCommands.commands || 
-                          drawingCommands.shapes || 
-                          drawingCommands.drawings || 
-                          drawingCommands.result;
+        const commandsObj = drawingCommands as Record<string, unknown>;
+        drawingCommands = commandsObj.commands || 
+                          commandsObj.shapes || 
+                          commandsObj.drawings || 
+                          commandsObj.result;
                           
         if (!Array.isArray(drawingCommands)) {
           throw new Error("Response is not in expected format");
@@ -67,34 +99,35 @@ ONLY respond with the JSON array, no other text.`;
       }
       
       // Validate each command
-      const validatedCommands = drawingCommands.filter(cmd => {
-        if (!cmd || !cmd.type) return false;
+      const validatedCommands = drawingCommands.filter((cmd: unknown): cmd is DrawingCommand => {
+        const typedCmd = cmd as Partial<DrawingCommand>;
+        if (!typedCmd || !typedCmd.type) return false;
         
-        switch (cmd.type.toLowerCase()) {
+        switch (typedCmd.type.toLowerCase()) {
           case "circle":
             return (
-              typeof cmd.centerX === 'number' && 
-              typeof cmd.centerY === 'number' && 
-              typeof cmd.radius === 'number' && 
-              cmd.radius > 0
+              typeof (typedCmd as Partial<CircleCommand>).centerX === 'number' && 
+              typeof (typedCmd as Partial<CircleCommand>).centerY === 'number' && 
+              typeof (typedCmd as Partial<CircleCommand>).radius === 'number' && 
+              (typedCmd as Partial<CircleCommand>).radius! > 0
             );
           case "rect":
           case "rectangle":
-            cmd.type = "rect"; // Normalize type
+            typedCmd.type = "rect"; // Normalize type
             return (
-              typeof cmd.x === 'number' && 
-              typeof cmd.y === 'number' && 
-              typeof cmd.width === 'number' && 
-              typeof cmd.height === 'number' && 
-              cmd.width > 0 && 
-              cmd.height > 0
+              typeof (typedCmd as Partial<RectCommand>).x === 'number' && 
+              typeof (typedCmd as Partial<RectCommand>).y === 'number' && 
+              typeof (typedCmd as Partial<RectCommand>).width === 'number' && 
+              typeof (typedCmd as Partial<RectCommand>).height === 'number' && 
+              (typedCmd as Partial<RectCommand>).width! > 0 && 
+              (typedCmd as Partial<RectCommand>).height! > 0
             );
           case "line":
             return (
-              typeof cmd.startX === 'number' && 
-              typeof cmd.startY === 'number' && 
-              typeof cmd.endX === 'number' && 
-              typeof cmd.endY === 'number'
+              typeof (typedCmd as Partial<LineCommand>).startX === 'number' && 
+              typeof (typedCmd as Partial<LineCommand>).startY === 'number' && 
+              typeof (typedCmd as Partial<LineCommand>).endX === 'number' && 
+              typeof (typedCmd as Partial<LineCommand>).endY === 'number'
             );
           default:
             return false;
@@ -119,13 +152,18 @@ ONLY respond with the JSON array, no other text.`;
       const jsonMatch = text.match(/\[\s*\{.*\}\s*\]/s);
       if (jsonMatch) {
         try {
-          const parsedCommands = JSON.parse(jsonMatch[0]);
+          const parsedCommands = JSON.parse(jsonMatch[0]) as unknown[];
           // Mark all commands as AI-generated
-          parsedCommands.forEach((cmd) => {
+          const typedCommands = parsedCommands.filter((cmd: unknown): cmd is DrawingCommand => {
+            const typedCmd = cmd as Partial<DrawingCommand>;
+            return !!typedCmd && typeof typedCmd.type === 'string';
+          });
+          
+          typedCommands.forEach((cmd) => {
             cmd.isAI = true;
           });
-          return parsedCommands;
-        } catch (e) {
+          return typedCommands;
+        } catch (_parseError) { // Renamed 'e' to '_parseError'
           console.error("Failed to extract JSON with regex");
         }
       }
@@ -172,7 +210,7 @@ function getPositionFromPrompt(prompt: string, canvasWidth: number, canvasHeight
 }
 
 // Fallback function for when AI generation fails
-function fallbackDrawing(prompt: string, canvasWidth: number, canvasHeight: number): any[] {
+function fallbackDrawing(prompt: string, canvasWidth: number, canvasHeight: number): DrawingCommand[] {
   console.log("Using fallback drawing for:", prompt);
   const lowerPrompt = prompt.toLowerCase();
   

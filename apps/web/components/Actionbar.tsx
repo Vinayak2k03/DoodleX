@@ -1,6 +1,6 @@
 import { Tool } from "@/app/draw/Canvas";
 import { Button } from "@repo/ui/components/button";
-import { Circle, Hand, Minus, Pencil, RotateCcw, Square, Undo, Redo, Eraser } from "lucide-react";
+import { Circle, Hand, Minus, Pencil, RotateCcw, Square} from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/components/tooltip";
 
 export default function ActionBar({

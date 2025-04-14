@@ -19,6 +19,7 @@
     "@repo/ui": "workspace:*",
     "@types/axios": "^0.14.4",
     "axios": "^1.7.9",
+    "framer-motion": "^12.6.5",
     "groq-sdk": "^0.19.0",
     "lucide-react": "^0.475.0",
     "next": "^15.1.6",

@@ -25,7 +25,7 @@ export default function SignInPage(){
                 
                 <div className="p-4 text-center border-t border-border/20">
                     <p className="text-sm text-muted-foreground">
-                        Don't have an account? <a href="/signup" className="text-primary hover:underline font-medium">Sign up</a>
+                        Don&apos;t have an account? <a href="/signup" className="text-primary hover:underline font-medium">Sign up</a>
                     </p>
                 </div>
             </Card>

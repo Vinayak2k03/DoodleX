@@ -13,7 +13,6 @@ import { useToast } from "@repo/ui/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, User, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
-import Link from "next/link";
 
 type SignUpFormData = z.infer<typeof CreateUserSchema>;
 

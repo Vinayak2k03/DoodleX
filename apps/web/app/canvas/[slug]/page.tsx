@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@repo/ui/components/button";
-import { ArrowLeft, Users, Share2, Download } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
 import CanvasWrapper from "@/components/CanvasWrapper";
 import { useState, useEffect, useMemo } from "react";
 

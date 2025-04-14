@@ -8,17 +8,31 @@ const logError = (message: string) => {
   console.error(message);
 };
 
+// Define the types for the API response
+interface ChatMessage {
+  id: number;
+  roomId: number;
+  userId: string;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ChatResponse {
+  chats: ChatMessage[];
+}
+
 export async function getExistingShapes(slug: string) {
   try {
     const token = await getVerifiedToken();
-    const res = await axios.get(`${BACKEND_URL}/chat/${slug}`, {
+    const res = await axios.get<ChatResponse>(`${BACKEND_URL}/chat/${slug}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
     const messages = res.data.chats || [];
-    return messages.map((message: any) => JSON.parse(message?.message));
+    return messages.map((message) => JSON.parse(message?.message));
   } catch (err) {
     if (err instanceof AxiosError) {
       logError(err.response?.data?.message || "Failed to fetch shapes");

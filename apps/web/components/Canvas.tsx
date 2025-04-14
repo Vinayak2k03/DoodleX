@@ -5,6 +5,43 @@ import ActionBar from "./Actionbar";
 import PromptBar from "./PromptBar";
 import { Canvas, Tool } from "@/app/draw/Canvas";
 
+// Define DrawingCommand types (you can alternatively import these from a shared types file)
+type BaseDrawingCommand = {
+  type: string;
+  isAI?: boolean;
+};
+
+type CircleCommand = BaseDrawingCommand & {
+  type: "circle";
+  centerX: number;
+  centerY: number;
+  radius: number;
+};
+
+type RectCommand = BaseDrawingCommand & {
+  type: "rect";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type LineCommand = BaseDrawingCommand & {
+  type: "line";
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+};
+
+type PencilCommand = BaseDrawingCommand & {
+  type: "pencil";
+  points: { x: number; y: number }[];
+};
+
+type DrawingCommand = CircleCommand | RectCommand | LineCommand | PencilCommand;
+
+
 export default function CanvasRenderer({
   roomId,
   socket,

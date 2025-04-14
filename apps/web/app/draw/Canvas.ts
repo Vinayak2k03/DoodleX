@@ -1,4 +1,3 @@
-import { ThermometerSnowflake, TicketSlash } from "lucide-react";
 import { getExistingShapes } from "./api";
 
 export type Shape =
@@ -9,6 +8,7 @@ export type Shape =
       width: number;
       height: number;
       isAI?: boolean;
+      source?: string; 
     }
   | {
       type: "circle";
@@ -16,6 +16,8 @@ export type Shape =
       centerY: number;
       radius: number;
       isAI?: boolean;
+      source?: string; 
+
     }
   | {
       type: "line";
@@ -24,11 +26,15 @@ export type Shape =
       endX: number;
       endY: number;
       isAI?: boolean;
+      source?: string; 
+
     }
   | {
       type: "pencil";
       points: { x: number; y: number }[];
       isAI?: boolean;
+      source?: string; 
+
     };
 
 export type Tool =
@@ -153,16 +159,18 @@ export class Canvas {
 
   touchMoveHandler = (e: TouchEvent) => {
     e.preventDefault();
-    if (e.touches.length === 1) {
+    if (e.touches.length >= 1) {
       const touch = e.touches[0];
+      // Now we're sure touch exists
       const mouseEvent = new MouseEvent("mousemove", {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
+        clientX: touch?.clientX,
+        clientY: touch?.clientY,
         button: this.selectedTool === "pan" ? 2 : 0,
       });
       this.mouseMoveHandler(mouseEvent);
     }
   };
+  
 
   touchEndHandler = (e: TouchEvent) => {
     e.preventDefault();
@@ -403,8 +411,8 @@ export class Canvas {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       const mouseEvent = new MouseEvent("mousedown", {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
+        clientX: touch?.clientX,
+        clientY: touch?.clientY,
         button: this.selectedTool === "pan" ? 2 : 0,
       });
       this.mouseDownHandler(mouseEvent);
@@ -516,7 +524,7 @@ export class Canvas {
   drawAIRect(x: number, y: number, width: number, height: number) {
     // Create shape object with source tracking
     const shape = {
-      type: "rect",
+      type: "rect" as const,
       x,
       y,
       width,
@@ -545,7 +553,7 @@ export class Canvas {
   drawAICircle(centerX: number, centerY: number, radius: number) {
     // Create shape object with source tracking
     const shape = {
-      type: "circle",
+      type: "circle" as const,
       centerX,
       centerY,
       radius,
@@ -573,7 +581,7 @@ export class Canvas {
   drawAILine(startX: number, startY: number, endX: number, endY: number) {
     // Create shape object with source tracking
     const shape = {
-      type: "line",
+      type: "line" as const,
       startX,
       startY,
       endX,
@@ -604,7 +612,7 @@ export class Canvas {
 
     // Create shape object with source tracking
     const shape = {
-      type: "pencil",
+      type: "pencil" as const,
       points: [...points], // Clone the array to avoid reference issues
       isAI: true,
       source: "ai-" + Math.random().toString(36).substring(2, 9),
@@ -613,7 +621,7 @@ export class Canvas {
     // Add to existing shapes
     this.existingShapes.push(shape);
 
-    // Send to socket for collaborative drawing
+    // Send to socket fo  r collaborative drawing
     this.socket.send(
       JSON.stringify({
         type: "shape_update",
