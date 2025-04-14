@@ -59,21 +59,6 @@ export default function CanvasLanding() {
               <p className="text-xs text-muted-foreground">Last saved just now</p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Invite</span>
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Share</span>
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-          </div>
         </div>
       </div>
       

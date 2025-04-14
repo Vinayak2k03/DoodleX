@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import "@repo/ui/globals.css"
-import {Toaster} from "@repo/ui/components/toaster"
+import "@repo/ui/globals.css";
+import { Toaster } from "@repo/ui/components/toaster";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -18,10 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" >
-      <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased bg-background text-foreground`}>
+    <html lang="en" className="dark">
+      <body
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased bg-background text-foreground`}
+      >
         {children}
-        <Toaster/>
+        <Toaster />
       </body>
     </html>
   );
