@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ActionBar from "./Actionbar";
+import PromptBar from "./PromptBar";
 import { Canvas, Tool } from "@/app/draw/Canvas";
 
 export default function CanvasRenderer({
@@ -63,12 +64,30 @@ export default function CanvasRenderer({
     }
   }, [canvas]);
 
+  const handleGenerateDrawing = (drawingCommands: any[]) => {
+    if (!canvas) return;
+    
+    // Process the drawing commands from the AI
+    drawingCommands.forEach(command => {
+      if (command.type === "rect") {
+        canvas.drawAIRect(command.x, command.y, command.width, command.height);
+      } else if (command.type === "circle") {
+        canvas.drawAICircle(command.centerX, command.centerY, command.radius);
+      } else if (command.type === "line") {
+        canvas.drawAILine(command.startX, command.startY, command.endX, command.endY);
+      } else if (command.type === "pencil") {
+        canvas.drawAIPencil(command.points);
+      }
+    });
+  };
+
   return (
     <div>
       <canvas
         ref={canvasRef}
         className="fixed top-0 left-0 w-screen h-screen"
       />
+      <PromptBar onGenerateDrawing={handleGenerateDrawing} />
       <ActionBar
         tool={tool}
         setSelectedTool={setTool}
