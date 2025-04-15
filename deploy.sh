@@ -22,20 +22,20 @@ fi
 
 # Stop and remove existing containers
 echo "Stopping existing containers..."
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 
 # Clean up unused Docker resources
 echo "Cleaning up Docker resources..."
-docker system prune -f
+docker system prune --force
 
 # Rebuild and start containers
 echo "Building and starting new containers..."
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 
 # Check if all containers are running
 echo "Checking container status..."
 sleep 10  # Wait for containers to start
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 echo "======================================"
 echo "Deployment completed at $(date)"
