@@ -57,7 +57,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: . 
       dockerfile: docker/Dockerfile.frontend
       args:
         - GOOGLE_API_KEY=${GOOGLE_API_KEY:-your_default_key}
