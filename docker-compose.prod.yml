@@ -33,7 +33,7 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/postgres}
-      - JWT_SECRET=${JWT_SECRET:-OEMjrCoLQ6PaQfqS7VlM+exyhh4dCdsS9F9PiDz6MEI=}
+      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret}
       - NODE_ENV=production
     command: sh -c "cd /usr/src/app && pnpm run db:migrate && pnpm run start:http"
     networks:
@@ -51,7 +51,7 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/postgres}
-      - JWT_SECRET=${JWT_SECRET:-OEMjrCoLQ6PaQfqS7VlM+exyhh4dCdsS9F9PiDz6MEI=}
+      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret}
       - NODE_ENV=production
     networks:
       - app_network
