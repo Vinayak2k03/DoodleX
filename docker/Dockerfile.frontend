@@ -2,26 +2,46 @@ FROM node:22-alpine
 
 WORKDIR /usr/src/app
 
+# Add build arguments for environment variables
 ARG DATABASE_URL
 ARG GOOGLE_API_KEY
-ENV GOOGLE_API_KEY=$GOOGLE_API_KEY
+ARG NEXT_PUBLIC_BACKEND_URL
+ARG NEXT_PUBLIC_WS_URL
 
+# Set environment variables
+ENV DATABASE_URL=$DATABASE_URL
+ENV GOOGLE_API_KEY=$GOOGLE_API_KEY
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+
+# Install dependencies
 RUN apk add --no-cache python3 make g++ gcc
 
-COPY ./packages ./packages
+# Copy package files first for better caching
 COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
 COPY ./pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY ./package.json ./package.json
 COPY ./turbo.json ./turbo.json
+
+# Copy packages that are needed for the web app
+COPY ./packages/common ./packages/common
+COPY ./packages/ui ./packages/ui
+COPY ./packages/db ./packages/db
+COPY ./packages/typescript-config ./packages/typescript-config
+COPY ./packages/eslint-config ./packages/eslint-config
+
+# Copy the web app
 COPY ./apps/web ./apps/web
 
+# Install dependencies and build the app
 RUN npm install -g pnpm
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 RUN pnpm run db:generate
-RUN DATABASE_URL=${DATABASE_URL} pnpm run build
+
+# Build with environment variables passed through
+RUN pnpm --filter web run build
 
 EXPOSE 3000
 
-CMD ["pnpm","run","start:web"]
-
-
+# Use the start:web command from root package.json
+CMD ["pnpm", "run", "start:web"]

@@ -15,6 +15,10 @@ RUN npm install -g pnpm
 RUN pnpm install
 RUN pnpm run db:generate
 
+# Build the backend-common package first
+RUN cd packages/backend-common && pnpm run build
+
+# Then build the ws-server
 RUN cd apps/ws-server && pnpm run build
 
 EXPOSE 8080
