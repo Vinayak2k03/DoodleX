@@ -1,1 +1,15 @@
 node_modules
+**/node_modules
+.git
+.turbo
+.vscode
+dist
+**/dist
+build
+**/build
+*.log
+npm-debug.log
+yarn-error.log
+.DS_Store
+*.local
+*.env
