@@ -2,7 +2,7 @@ name: Deploy DoodleX to DigitalOcean
 on: 
     push:
         branches:
-            - main
+            - test
     workflow_dispatch: 
 jobs:
     deploy:
@@ -17,9 +17,9 @@ jobs:
               uses: shimataro/ssh-key-action@v2
               with: 
                 key: ${{secrets.SSH_PRIVATE_KEY}}
-                known_hosts: ${{secrets.SSH_KNOWN_HOSTS}}
+                known_hosts: ${{secrets.SSH_KNOWN_HOSTS1}}
                 if_key_exists: replace
 
             - name: Deploy to DigitalOcean
               run: |
-                ssh ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "cd /opt/doodlex && bash deploy.sh"
+                ssh ${{secrets.SSH_USER}}@${{secrets.SSH_HOST1}} "cd /opt/doodlex && bash deploy.sh"
