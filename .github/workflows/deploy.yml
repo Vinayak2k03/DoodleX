@@ -2,7 +2,7 @@ name: Deploy DoodleX to DigitalOcean
 on: 
     push:
         branches:
-            - test
+            - main
     workflow_dispatch: 
 jobs:
     deploy:
