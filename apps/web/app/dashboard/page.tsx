@@ -162,8 +162,10 @@ export default function Dashboard() {
             <h2 className="text-2xl font-semibold">Your Spaces</h2>
           </div>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto">
-            <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
+          {/* Improved mobile responsiveness for controls */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+            {/* Search field - full width on mobile */}
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
@@ -174,24 +176,30 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="flex border rounded-md overflow-hidden">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
-                aria-label="Grid view"
-              >
-                <Grid2x2 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
-                aria-label="List view"
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
+            {/* View control and create form - row on both mobile and desktop */}
+            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+              <div className="flex border rounded-md overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
+                  aria-label="Grid view"
+                >
+                  <Grid2x2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
+                  aria-label="List view"
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
 
-            <CreateRoomForm onRoomCreated={handleRoomCreated} />
+              {/* Ensure CreateRoomForm doesn't overflow */}
+              <div className="flex-grow sm:flex-grow-0">
+                <CreateRoomForm onRoomCreated={handleRoomCreated} />
+              </div>
+            </div>
           </div>
         </div>
 
