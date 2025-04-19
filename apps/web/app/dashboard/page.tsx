@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import DeleteIcon1 from "@repo/ui/icons/deleteIcon";
+import { Trash2 } from "lucide-react";
 
 type Room = {
   id: number;
@@ -91,16 +91,30 @@ export default function Dashboard() {
     setIsDeleteModalOpen(true);
   };
 
+  const cancelDeleteRoom = () => {
+    setIsDeleteModalOpen(false);
+    setRoomToDelete(null);
+  };
+
+  const filteredRooms = rooms.filter((room) =>
+    room.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const confirmDeleteRoom = async () => {
     if (roomToDelete === null) return;
 
     try {
       const token = await getVerifiedToken();
-      await axios.delete(`${BACKEND_URL}/rooms/${roomToDelete}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Change from DELETE request with ID in URL to POST request with ID in body
+      await axios.post(
+        `${BACKEND_URL}/rooms/delete-room`,
+        { roomId: roomToDelete },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setRooms((prevRooms) =>
         prevRooms.filter((room) => room.id !== roomToDelete)
@@ -121,15 +135,6 @@ export default function Dashboard() {
       setRoomToDelete(null);
     }
   };
-
-  const cancelDeleteRoom = () => {
-    setIsDeleteModalOpen(false);
-    setRoomToDelete(null);
-  };
-
-  const filteredRooms = rooms.filter((room) =>
-    room.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -250,11 +255,14 @@ export default function Dashboard() {
                             </span>
                           </div>
                           <button
-                            onClick={() => initiateDeleteRoom(room.id)}
-                            className="outline-none focus:outline-none hover:opacity-80 transition-opacity p-1 hover:bg-red-50 rounded-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              initiateDeleteRoom(room.id);
+                            }}
+                            className="outline-none focus:outline-none p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors duration-200 flex items-center justify-center z-10"
                             aria-label="Delete room"
                           >
-                            <DeleteIcon1 />
+                            <Trash2 className="h-5 w-5" />
                           </button>
                         </CardTitle>
                         <CardDescription className="flex items-center text-sm ml-13 pl-0 mt-1">
@@ -317,11 +325,14 @@ export default function Dashboard() {
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() => initiateDeleteRoom(room.id)}
-                            className="outline-none focus:outline-none hover:opacity-80 transition-opacity p-1 hover:bg-red-50 rounded-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              initiateDeleteRoom(room.id);
+                            }}
+                            className="outline-none focus:outline-none p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors duration-200 flex items-center justify-center z-10"
                             aria-label="Delete room"
                           >
-                            <DeleteIcon1 />
+                            <Trash2 className="h-5 w-5" />
                           </button>
                           <Button
                             variant="default"
@@ -373,9 +384,19 @@ export default function Dashboard() {
       </div>
 
       {/* Delete confirmation modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 shadow-lg max-w-md w-full mx-4">
+      {/* Delete confirmation modal - with debugging */}
+      {isDeleteModalOpen && roomToDelete !== null ? (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Only close if clicking the backdrop
+            if (e.target === e.currentTarget) cancelDeleteRoom();
+          }}
+        >
+          <div
+            className="bg-card rounded-lg p-6 shadow-lg max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-semibold mb-4">Confirm Deletion</h3>
             <p className="text-muted-foreground mb-6">
               Are you sure you want to delete this room? This action cannot be
@@ -391,7 +412,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -50,10 +50,8 @@ export const createRoom = async (req: Request, res: Response) => {
     res.status(201).json({
       message: "Room created successfully",
       roomId: room.id,
-      room
+      room,
     });
-
-
   } catch (err) {
     res.status(500).json({
       message: "Internal server error",
@@ -116,5 +114,63 @@ export const getRoom = async (req: Request, res: Response) => {
       message: "Internal server error",
     });
     console.log(err);
+  }
+};
+
+export const deleteRoom = async (req: Request, res: Response)=> {
+  try {
+    const { roomId } = req.body;
+    const userId = req.user;
+
+    if (!roomId || !userId) {
+      res.status(400).json({
+        message: "Invalid request",
+      });
+      return;
+    }
+
+    // Check if room exists and user is the admin
+    const room = await prismaClient.room.findUnique({
+      where: {
+        id: Number(roomId),
+      },
+    });
+
+    if (!room) {
+      res.status(404).json({
+        message: "Room not found",
+      });
+      return;
+    }
+
+    if (room.adminId !== userId) {
+      res.status(403).json({
+        message: "You don't have permission to delete this room",
+      });
+      return;
+    }
+
+    // Delete associated chats first
+    await prismaClient.chat.deleteMany({
+      where: {
+        roomId: Number(roomId),
+      },
+    });
+
+    // Delete room
+    await prismaClient.room.delete({
+      where: {
+        id: Number(roomId),
+      },
+    });
+
+    res.status(200).json({
+      message: "Room deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error deleting room:", err);
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };

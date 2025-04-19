@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "@repo/ui/globals.css";
 import { Toaster } from "@repo/ui/components/toaster";
+import { Metadata } from "next";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -11,6 +12,18 @@ const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 });
+
+
+export const metadata: Metadata = {
+  title: {
+    default: "DoodleX",
+    template: "%s | DoodleX"
+  },
+  description: "Create, collaborate, and share drawings in real-time",
+  icons: {
+    icon: "/favicon.ico"
+  }
+};
 
 export default function RootLayout({
   children,
