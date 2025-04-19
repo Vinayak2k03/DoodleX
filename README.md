@@ -84,7 +84,7 @@ This project uses a monorepo structure managed by Turborepo:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/DoodleX.git
+git clone https://github.com/Vinayak2k03/DoodleX.git
 cd DoodleX
 ```
 
