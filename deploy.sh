@@ -4,20 +4,33 @@
 # Pull latest changes
 git pull
 
-# Set environment variables (can be defined in a .env file)
-export DB_USER=postgres
-export DB_PASSWORD=your_secure_password
-export DB_NAME=postgres
-export DATABASE_URL=postgresql://postgres:your_secure_password@postgres:5432/postgres
-export JWT_SECRET=OEMjrCoLQ6PaQfqS7VlM+exyhh4dCdsS9F9PiDz6MEI=
-export GOOGLE_API_KEY=your_google_api_key
-export NEXT_PUBLIC_BACKEND_URL=https://staging.doodlex.vinayaknagar.tech/api/v1
-export NEXT_PUBLIC_WS_URL=wss://staging.doodlex.vinayaknagar.tech/ws
+# Source environment variables from .env file if it exists
+ENV_FILE="/opt/doodlex/.env"
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading environment variables from $ENV_FILE"
+    # Use 'export' with 'set -a' to make variables available to docker-compose
+    set -a
+    source "$ENV_FILE"
+    set +a
+else
+    echo "ERROR: Environment file $ENV_FILE not found. Exiting."
+    exit 1
+fi
+
+# Optional: You can still export non-secret defaults or overrides here if needed
+# export NODE_ENV=production # Example
 
 # Build and start containers using production config
-docker-compose -f docker-compose.prod.yml down
-docker-compose -f docker-compose.prod.yml build --no-cache
-docker-compose -f docker-compose.prod.yml up -d
+# Docker Compose will automatically pick up the exported variables
+echo "Stopping existing containers..."
+docker compose -f docker-compose.prod.yml down
+echo "Building new images (if necessary)..."
+docker compose -f docker-compose.prod.yml build --no-cache # Consider removing --no-cache for faster builds unless needed
+echo "Starting new containers..."
+docker compose -f docker-compose.prod.yml up -d
 
 # Clean up unused images
+echo "Cleaning up unused Docker images..."
 docker image prune -f
+
+echo "Deployment finished."

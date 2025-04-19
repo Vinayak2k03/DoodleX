@@ -164,19 +164,6 @@ export default function Home() {
                   </div>
                   <h3 className="font-semibold text-xl text-foreground/90">Draw Anything</h3>
                   <p className="text-muted-foreground leading-relaxed">Express your creativity with our intuitive drawing tools designed for both beginners and professionals.</p>
-                  <div className="pt-1">
-                    <Link href="/features">
-                      <Button variant="ghost" size="sm" className="group/button text-primary hover:text-primary hover:bg-primary/10 -ml-2">
-                        <motion.span 
-                          className="flex items-center"
-                          whileHover={{ x: 5 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                        >
-                          Learn more <ChevronRight className="ml-1 h-4 w-4 group-hover/button:translate-x-1 transition-transform" />
-                        </motion.span>
-                      </Button>
-                    </Link>
-                  </div>
                 </motion.div>
 
                 {/* Second Feature Card */}
@@ -190,19 +177,6 @@ export default function Home() {
                   </div>
                   <h3 className="font-semibold text-xl text-foreground/90">Collaborate</h3>
                   <p className="text-muted-foreground leading-relaxed">Work with others in real-time to create amazing art with seamless sharing and editing capabilities.</p>
-                  <div className="pt-1">
-                    <Link href="/features">
-                      <Button variant="ghost" size="sm" className="group/button text-primary hover:text-primary hover:bg-primary/10 -ml-2">
-                        <motion.span 
-                          className="flex items-center"
-                          whileHover={{ x: 5 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                        >
-                          Learn more <ChevronRight className="ml-1 h-4 w-4 group-hover/button:translate-x-1 transition-transform" />
-                        </motion.span>
-                      </Button>
-                    </Link>
-                  </div>
                 </motion.div>
 
                 {/* Third Feature Card */}
@@ -216,19 +190,6 @@ export default function Home() {
                   </div>
                   <h3 className="font-semibold text-xl text-foreground/90">Share Instantly</h3>
                   <p className="text-muted-foreground leading-relaxed">Share your creations with friends and colleagues with just one click to any platform.</p>
-                  <div className="pt-1">
-                    <Link href="/features">
-                      <Button variant="ghost" size="sm" className="group/button text-primary hover:text-primary hover:bg-primary/10 -ml-2">
-                        <motion.span 
-                          className="flex items-center"
-                          whileHover={{ x: 5 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                        >
-                          Learn more <ChevronRight className="ml-1 h-4 w-4 group-hover/button:translate-x-1 transition-transform" />
-                        </motion.span>
-                      </Button>
-                    </Link>
-                  </div>
                 </motion.div>
               </motion.div>
             </motion.div>

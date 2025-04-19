@@ -67,7 +67,6 @@ export function CreateRoomForm({ onRoomCreated }: CreateRoomFormProps) {
       console.log("setting false")
     }
   };
-
   return (
     <div className="flex items-center gap-3">
       <Input
@@ -75,25 +74,25 @@ export function CreateRoomForm({ onRoomCreated }: CreateRoomFormProps) {
         value={roomName}
         onChange={(e) => setRoomName(e.target.value)}
         placeholder="Room Name"
-        className="min-w-[200px] pr-3 focus-visible:ring-primary"
-        disabled={loading} // Add this line
+        className="min-w-0 w-full sm:w-auto sm:min-w-[200px] px-3 py-2 rounded-md border border-border/40 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+        disabled={loading}
       />
       <Button
         onClick={handleSubmit}
         type="button"
         size="sm"
-        className="flex items-center gap-2 px-4 py-2 h-10"
-        disabled={loading} // Add this line
+        className="whitespace-nowrap"
+        disabled={loading}
       >
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Creating...</span>
+            <span className="hidden sm:inline">Creating...</span>
           </>
         ) : (
           <>
             <Plus className="h-4 w-4" />
-            <span>Create Room</span>
+            <span className="hidden sm:inline">Create Room</span>
           </>
         )}
       </Button>

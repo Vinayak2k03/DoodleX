@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import DeleteIcon1 from "@repo/ui/icons/deleteIcon";
+import { Trash2 } from "lucide-react";
 
 type Room = {
   id: number;
@@ -91,16 +91,30 @@ export default function Dashboard() {
     setIsDeleteModalOpen(true);
   };
 
+  const cancelDeleteRoom = () => {
+    setIsDeleteModalOpen(false);
+    setRoomToDelete(null);
+  };
+
+  const filteredRooms = rooms.filter((room) =>
+    room.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const confirmDeleteRoom = async () => {
     if (roomToDelete === null) return;
 
     try {
       const token = await getVerifiedToken();
-      await axios.delete(`${BACKEND_URL}/rooms/${roomToDelete}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Change from DELETE request with ID in URL to POST request with ID in body
+      await axios.post(
+        `${BACKEND_URL}/rooms/delete-room`,
+        { roomId: roomToDelete },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setRooms((prevRooms) =>
         prevRooms.filter((room) => room.id !== roomToDelete)
@@ -121,15 +135,6 @@ export default function Dashboard() {
       setRoomToDelete(null);
     }
   };
-
-  const cancelDeleteRoom = () => {
-    setIsDeleteModalOpen(false);
-    setRoomToDelete(null);
-  };
-
-  const filteredRooms = rooms.filter((room) =>
-    room.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -162,8 +167,10 @@ export default function Dashboard() {
             <h2 className="text-2xl font-semibold">Your Spaces</h2>
           </div>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto">
-            <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
+          {/* Improved mobile responsiveness for controls */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+            {/* Search field - full width on mobile */}
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
@@ -174,24 +181,30 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="flex border rounded-md overflow-hidden">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
-                aria-label="Grid view"
-              >
-                <Grid2x2 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
-                aria-label="List view"
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
+            {/* View control and create form - row on both mobile and desktop */}
+            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+              <div className="flex border rounded-md overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
+                  aria-label="Grid view"
+                >
+                  <Grid2x2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}
+                  aria-label="List view"
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
 
-            <CreateRoomForm onRoomCreated={handleRoomCreated} />
+              {/* Ensure CreateRoomForm doesn't overflow */}
+              <div className="flex-grow sm:flex-grow-0">
+                <CreateRoomForm onRoomCreated={handleRoomCreated} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -242,11 +255,14 @@ export default function Dashboard() {
                             </span>
                           </div>
                           <button
-                            onClick={() => initiateDeleteRoom(room.id)}
-                            className="outline-none focus:outline-none hover:opacity-80 transition-opacity p-1 hover:bg-red-50 rounded-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              initiateDeleteRoom(room.id);
+                            }}
+                            className="outline-none focus:outline-none p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors duration-200 flex items-center justify-center z-10"
                             aria-label="Delete room"
                           >
-                            <DeleteIcon1 />
+                            <Trash2 className="h-5 w-5" />
                           </button>
                         </CardTitle>
                         <CardDescription className="flex items-center text-sm ml-13 pl-0 mt-1">
@@ -309,11 +325,14 @@ export default function Dashboard() {
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() => initiateDeleteRoom(room.id)}
-                            className="outline-none focus:outline-none hover:opacity-80 transition-opacity p-1 hover:bg-red-50 rounded-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              initiateDeleteRoom(room.id);
+                            }}
+                            className="outline-none focus:outline-none p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors duration-200 flex items-center justify-center z-10"
                             aria-label="Delete room"
                           >
-                            <DeleteIcon1 />
+                            <Trash2 className="h-5 w-5" />
                           </button>
                           <Button
                             variant="default"
@@ -365,9 +384,19 @@ export default function Dashboard() {
       </div>
 
       {/* Delete confirmation modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 shadow-lg max-w-md w-full mx-4">
+      {/* Delete confirmation modal - with debugging */}
+      {isDeleteModalOpen && roomToDelete !== null ? (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Only close if clicking the backdrop
+            if (e.target === e.currentTarget) cancelDeleteRoom();
+          }}
+        >
+          <div
+            className="bg-card rounded-lg p-6 shadow-lg max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-semibold mb-4">Confirm Deletion</h3>
             <p className="text-muted-foreground mb-6">
               Are you sure you want to delete this room? This action cannot be
@@ -383,7 +412,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
