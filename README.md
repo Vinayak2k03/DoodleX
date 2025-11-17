@@ -4,6 +4,9 @@
 
 **🎨 Real-time Collaborative Drawing Platform 🎨**
 
+![Preview](assets/preview.png)
+
+
 *Create, collaborate, and share stunning drawings instantly with anyone, anywhere.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
