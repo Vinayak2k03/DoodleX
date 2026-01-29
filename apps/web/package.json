@@ -22,9 +22,9 @@
     "framer-motion": "^12.6.5",
     "groq-sdk": "^0.19.0",
     "lucide-react": "^0.475.0",
-    "next": "^15.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "^15.1.9",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
     "react-hook-form": "^7.54.2",
     "tailwindcss": "^3.4.14",
     "zod": "^3.24.2"
