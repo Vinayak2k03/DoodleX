@@ -8,10 +8,11 @@ WORKDIR /usr/src/app
 COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# Build dependencies in order from workspace root
-RUN pnpm --filter=@repo/backend-common run build
+# Generate Prisma client first
 RUN pnpm run db:generate
-RUN pnpm --filter=ws-server run build
+
+# Build using turbo which handles dependencies automatically
+RUN pnpm run build --filter=ws-server...
 
 FROM base
 WORKDIR /usr/src/app
