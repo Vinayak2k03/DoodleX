@@ -1,26 +1,25 @@
-FROM node:22-alpine
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
+FROM base AS build
 WORKDIR /usr/src/app
+COPY . .
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-RUN apk add --no-cache python3 make g++ gcc
+# Build backend-common first
+RUN pnpm run build --filter=@repo/backend-common
 
-COPY ./packages ./packages
-COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
-COPY ./pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY ./package.json ./package.json
-COPY ./turbo.json ./turbo.json
-COPY ./apps/ws-server ./apps/ws-server
+# Then build ws-server
+RUN pnpm run build --filter=ws-server
 
-RUN npm install -g pnpm
-RUN pnpm install
-RUN pnpm run db:generate
+FROM base
+WORKDIR /usr/src/app
+COPY --from=build /usr/src/app .
 
-# Build the backend-common package first
-RUN cd packages/backend-common && pnpm run build
-
-# Then build the ws-server
-RUN cd apps/ws-server && pnpm run build
+# Install wget for health checks
+RUN apk add --no-cache wget
 
 EXPOSE 8080
-
-CMD ["pnpm","run","start:ws"]
+CMD ["pnpm", "run", "start:ws"]

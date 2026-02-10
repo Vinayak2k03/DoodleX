@@ -1,28 +1,26 @@
 {
   "name": "ws-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "npm run build && npm run start"
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@repo/backend-common": "workspace:*",
+    "@repo/db": "workspace:*",
+    "cors": "^2.8.5",
+    "express": "^5.0.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/backend-common":"workspace:*",
-    "@repo/db":"workspace:*",
-    "@types/jsonwebtoken": "^9.0.8",
-    "@types/ws": "^8.5.14",
-    "@types/node": "^18.0.0",
-    "typescript": "^4.5.4"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "jsonwebtoken": "^9.0.2",
-    "ws": "^8.18.0"
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   }
 }
