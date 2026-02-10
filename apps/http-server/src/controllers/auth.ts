@@ -3,7 +3,7 @@ import {Request,Response } from "express";
 import {prismaClient} from "@repo/db/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "@repo/backend-common/config";
+import { JWT_SECRET } from "@repo/backend-common";
 
 export const signup=async(req:Request,res:Response):Promise<any>=>{
     try{
