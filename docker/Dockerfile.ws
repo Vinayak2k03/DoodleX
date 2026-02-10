@@ -14,6 +14,9 @@ RUN pnpm run db:generate
 # Build backend-common first
 RUN cd packages/backend-common && pnpm run build
 
+# Remove project references from ws-server tsconfig to avoid resolution issues
+RUN sed -i '/"references"/,/\]/d' apps/ws-server/tsconfig.json
+
 # Build ws-server (now backend-common/dist exists)
 RUN cd apps/ws-server && pnpm run build
 
