@@ -8,10 +8,10 @@ WORKDIR /usr/src/app
 COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# Build dependencies in order
-RUN cd packages/backend-common && pnpm run build
+# Build dependencies in order from workspace root
+RUN pnpm --filter=@repo/backend-common run build
 RUN pnpm run db:generate
-RUN cd apps/http-server && pnpm run build
+RUN pnpm --filter=http-server run build
 
 FROM base
 WORKDIR /usr/src/app
