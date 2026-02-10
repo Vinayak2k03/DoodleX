@@ -12,13 +12,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run db:generate
 
 # Build backend-common first
-RUN pnpm --filter=@repo/backend-common run build
+RUN cd packages/backend-common && pnpm run build
 
-# Re-run install to properly link the built backend-common package
-RUN pnpm install --frozen-lockfile
-
-# Now build http-server
-RUN pnpm --filter=http-server run build
+# Build http-server (now backend-common/dist exists)
+RUN cd apps/http-server && pnpm run build
 
 FROM base
 WORKDIR /usr/src/app
