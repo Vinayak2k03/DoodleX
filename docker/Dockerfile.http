@@ -11,8 +11,14 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 # Generate Prisma client first
 RUN pnpm run db:generate
 
-# Build using turbo which handles dependencies automatically
-RUN pnpm run build --filter=http-server...
+# Build backend-common first
+RUN pnpm --filter=@repo/backend-common run build
+
+# Re-run install to properly link the built backend-common package
+RUN pnpm install --frozen-lockfile
+
+# Now build http-server
+RUN pnpm --filter=http-server run build
 
 FROM base
 WORKDIR /usr/src/app
