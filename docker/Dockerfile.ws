@@ -14,10 +14,16 @@ RUN pnpm run db:generate
 # Build backend-common first
 RUN cd packages/backend-common && pnpm run build
 
-# Remove project references from ws-server tsconfig to avoid resolution issues
+# Verify backend-common was built correctly
+RUN ls -la packages/backend-common/dist/
+
+# Change moduleResolution to node16 for better compatibility with pnpm workspaces
+RUN sed -i 's/"moduleResolution": "bundler"/"moduleResolution": "node16"/' apps/ws-server/tsconfig.json
+
+# Remove project references to avoid composite build issues
 RUN sed -i '/"references"/,/\]/d' apps/ws-server/tsconfig.json
 
-# Build ws-server (now backend-common/dist exists)
+# Build ws-server
 RUN cd apps/ws-server && pnpm run build
 
 FROM base
