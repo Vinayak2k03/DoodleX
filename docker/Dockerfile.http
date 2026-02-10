@@ -10,7 +10,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Build dependencies in order
 RUN cd packages/backend-common && pnpm run build
-RUN cd packages/db && pnpm run db:generate
+RUN pnpm run db:generate
 RUN cd apps/http-server && pnpm run build
 
 FROM base
