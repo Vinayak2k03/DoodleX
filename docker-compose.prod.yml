@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:16-alpine
     container_name: doodlex_postgres
     restart: always
     environment:
@@ -11,11 +9,10 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,7 +24,7 @@ services:
     container_name: doodlex_backend
     restart: always
     ports:
-      - "3001:3001"  # Add this to expose the port
+      - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,9 +32,9 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=production
-    command: sh -c "cd /usr/src/app && pnpm run db:migrate && pnpm run start:http"
     networks:
       - app_network
+
   ws:
     build:
       context: .
@@ -45,7 +42,7 @@ services:
     container_name: doodlex_ws
     restart: always
     ports:
-      - "8080:8080" 
+      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,7 +55,7 @@ services:
 
   frontend:
     build:
-      context: . 
+      context: .
       dockerfile: docker/Dockerfile.frontend
       args:
         - GOOGLE_API_KEY=${GOOGLE_API_KEY}
@@ -67,7 +64,10 @@ services:
     container_name: doodlex_frontend
     restart: always
     ports:
-      - "3000:3000"  # Add this to expose the port
+      - "3000:3000"
+    depends_on:
+      - backend
+      - ws
     environment:
       - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
       - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}

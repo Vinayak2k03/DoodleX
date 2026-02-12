@@ -85,7 +85,7 @@ export const getAllRooms = async (req: Request, res: Response) => {
 export const getRoom = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug;
-    if (!slug) {
+    if (!slug || Array.isArray(slug)) {
       res.status(400).json({
         message: "Invalid request",
       });
@@ -94,7 +94,7 @@ export const getRoom = async (req: Request, res: Response) => {
 
     const room = await prismaClient.room.findUnique({
       where: {
-        slug: slug,
+        slug: slug as string,
       },
     });
 

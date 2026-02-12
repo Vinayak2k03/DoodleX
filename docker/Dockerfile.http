@@ -8,30 +8,16 @@ WORKDIR /usr/src/app
 COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# Generate Prisma client first
+# Generate Prisma client
 RUN pnpm run db:generate
 
-# Build backend-common first
-RUN cd packages/backend-common && pnpm run build
+# Build backend-common then http-server
+RUN pnpm --filter=@repo/backend-common run build
+RUN pnpm --filter=http-server run build
 
-# Verify backend-common was built correctly
-RUN ls -la packages/backend-common/dist/
-
-# Change moduleResolution to node16 for better compatibility with pnpm workspaces
-RUN sed -i 's/"moduleResolution": "bundler"/"moduleResolution": "node16"/' apps/http-server/tsconfig.json
-
-# Remove project references to avoid composite build issues
-RUN sed -i '/"references"/,/\]/d' apps/http-server/tsconfig.json
-
-# Build http-server
-RUN cd apps/http-server && pnpm run build
-
-FROM base
+FROM base AS production
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app .
 
-# Install wget for health checks
-RUN apk add --no-cache wget
-
 EXPOSE 3001
-CMD ["sh", "-c", "cd /usr/src/app && pnpm run db:migrate && pnpm run start:http"]
+CMD ["sh", "-c", "pnpm run db:migrate && pnpm run start:http"]

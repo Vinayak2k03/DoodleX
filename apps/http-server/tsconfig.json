@@ -4,19 +4,14 @@
     "lib": ["es2015", "es2016"],
     "rootDir": "./src",
     "outDir": "./dist",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "ES2022",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "composite": true,
     "declaration": true,
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "global.d.ts"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../../packages/backend-common" },
-    { "path": "../../packages/db" }
-  ]
+  "exclude": ["node_modules", "dist"]
 }

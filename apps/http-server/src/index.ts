@@ -1,8 +1,8 @@
 import express from 'express';
-import authRouter from './routes/auth';
-import roomRouter from "./routes/room";
-import chatRouter from "./routes/chat";
-import authMiddleware from './middlewares/authMiddleware';
+import authRouter from './routes/auth.js';
+import roomRouter from "./routes/room.js";
+import chatRouter from "./routes/chat.js";
+import authMiddleware from './middlewares/authMiddleware.js';
 import cors from "cors";
 import cookieParser from "cookie-parser";
 

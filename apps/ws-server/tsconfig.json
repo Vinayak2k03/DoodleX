@@ -1,22 +1,17 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "lib": ["es2015", "es2016", "dom"],
+    "lib": ["es2015", "es2016"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "ES2022",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "composite": true,
     "declaration": true,
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../../packages/backend-common" },
-    { "path": "../../packages/db" }
-  ]
+  "exclude": ["node_modules", "dist"]
 }
