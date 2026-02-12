@@ -11,8 +11,12 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 # Generate Prisma client
 RUN pnpm run db:generate
 
-# Build backend-common then ws-server
+# Build all dependency packages
 RUN pnpm --filter=@repo/backend-common run build
+RUN pnpm --filter=@repo/common run build
+RUN pnpm --filter=@repo/db run build
+
+# Build ws-server
 RUN pnpm --filter=ws-server run build
 
 FROM base AS production

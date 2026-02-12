@@ -24,6 +24,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 # Generate Prisma client
 RUN pnpm run db:generate
 
+# Build dependency packages
+RUN pnpm --filter=@repo/common run build
+RUN pnpm --filter=@repo/db run build
+
 # Build the Next.js app
 RUN pnpm --filter web run build
 
