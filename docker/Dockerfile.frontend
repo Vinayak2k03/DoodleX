@@ -15,6 +15,9 @@ ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 ENV GOOGLE_API_KEY=$GOOGLE_API_KEY
 
+# Limit Node.js memory to prevent OOM on small VPS
+ENV NODE_OPTIONS="--max-old-space-size=1536"
+
 # Install native build deps for bcrypt/canvas etc.
 RUN apk add --no-cache python3 make g++ gcc
 
@@ -31,9 +34,18 @@ RUN pnpm --filter=@repo/db run build
 # Build the Next.js app
 RUN pnpm --filter web run build
 
-FROM base AS production
-WORKDIR /usr/src/app
-COPY --from=build /usr/src/app .
+# --- Production stage: use standalone output ---
+FROM node:22-alpine AS production
+WORKDIR /app
+
+# Copy standalone server
+COPY --from=build /usr/src/app/apps/web/.next/standalone ./
+# Copy static assets
+COPY --from=build /usr/src/app/apps/web/.next/static ./apps/web/.next/static
+# Copy public assets
+COPY --from=build /usr/src/app/apps/web/public ./apps/web/public
 
 EXPOSE 3000
-CMD ["pnpm", "run", "start:web"]
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+CMD ["node", "apps/web/server.js"]
