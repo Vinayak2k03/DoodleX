@@ -20,5 +20,8 @@ app.use("/api/v1/auth",authRouter);
 app.use("/api/v1/rooms",authMiddleware,roomRouter);
 app.use("/api/v1/chat",authMiddleware,chatRouter);
 
-app.listen(3001);
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`HTTP server running on port ${PORT}`);
+});
 

@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/types.js",
   "types": "./dist/types.d.ts",
-  "exports":{
+  "exports": {
     "./types": {
       "types": "./dist/types.d.ts",
       "default": "./dist/types.js"
@@ -13,8 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

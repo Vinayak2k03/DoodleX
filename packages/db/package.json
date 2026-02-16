@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/prisma.js",
   "types": "./dist/prisma.d.ts",
-  "exports":{
+  "exports": {
     "./client": {
       "types": "./dist/prisma.d.ts",
       "default": "./dist/prisma.js"
@@ -13,8 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

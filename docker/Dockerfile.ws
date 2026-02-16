@@ -6,7 +6,7 @@ RUN corepack enable
 FROM base AS build
 WORKDIR /usr/src/app
 COPY . .
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Generate Prisma client
 RUN pnpm run db:generate
@@ -23,5 +23,6 @@ FROM base AS production
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app .
 
+ENV PORT=8080
 EXPOSE 8080
 CMD ["pnpm", "run", "start:ws"]

@@ -14,15 +14,13 @@ ARG GOOGLE_API_KEY
 ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 ENV GOOGLE_API_KEY=$GOOGLE_API_KEY
-
-# Limit Node.js memory to prevent OOM on small VPS
 ENV NODE_OPTIONS="--max-old-space-size=1536"
 
-# Install native build deps for bcrypt/canvas etc.
+# Install native build deps
 RUN apk add --no-cache python3 make g++ gcc
 
 COPY . .
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Generate Prisma client
 RUN pnpm run db:generate
@@ -31,21 +29,18 @@ RUN pnpm run db:generate
 RUN pnpm --filter=@repo/common run build
 RUN pnpm --filter=@repo/db run build
 
-# Build the Next.js app
+# Build the Next.js app (standalone output)
 RUN pnpm --filter web run build
 
-# --- Production stage: use standalone output ---
+# --- Minimal production image using standalone output ---
 FROM node:22-alpine AS production
 WORKDIR /app
 
-# Copy standalone server
 COPY --from=build /usr/src/app/apps/web/.next/standalone ./
-# Copy static assets
 COPY --from=build /usr/src/app/apps/web/.next/static ./apps/web/.next/static
-# Copy public assets
 COPY --from=build /usr/src/app/apps/web/public ./apps/web/public
 
-EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+EXPOSE 3000
 CMD ["node", "apps/web/server.js"]

@@ -6,11 +6,10 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
-    "lib": ["ES2022"],
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

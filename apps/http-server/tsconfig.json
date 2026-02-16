@@ -2,8 +2,8 @@
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "lib": ["es2015", "es2016"],
-    "rootDir": "./src",
     "outDir": "./dist",
+    "rootDir": "./src",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
